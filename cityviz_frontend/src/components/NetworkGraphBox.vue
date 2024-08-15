@@ -3,7 +3,7 @@ import { useCityPicFeatStore } from '@/stores/cityPicFeat'
 import { computed, ref } from 'vue'
 const cityPicFeatsData = useCityPicFeatStore()
 
-const zoom_rate = ref(100)
+const zoom_rate = ref(150)
 function zoom_up(e: MouseEvent) {
   e.stopPropagation()
   e.preventDefault()

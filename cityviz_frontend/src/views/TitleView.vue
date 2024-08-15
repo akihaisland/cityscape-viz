@@ -549,6 +549,7 @@ function switch_filter_all() {
   /* top: 0; */
 
   z-index: 999;
+  overflow: hidden;
 }
 .city_filter_box .filter_box_title {
   display: flex;
@@ -557,7 +558,7 @@ function switch_filter_all() {
   gap: 10px;
   align-self: stretch;
 
-  border-radius: 4px 4px 0px 0px;
+  /* border-radius: 4px 4px 0px 0px; */
   background: var(--Grays-Black, #000);
 
   color: var(--white, #fff);

@@ -4,6 +4,7 @@ import L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import * as turf from '@turf/turf'
 import { useCityPicFeatStore } from '@/stores/cityPicFeat'
+import CityScaleFeatsBox from './CityScaleFeatsBox.vue'
 let map: L.Map
 const map_zoom_rate = ref(5)
 
@@ -243,10 +244,18 @@ watch(
   },
   { deep: true }
 )
+watch(
+  () => cityPicFeatsData.main_sel_show_view,
+  () => {
+    map.invalidateSize(true)
+  }
+)
 onMounted(() => {
   map = L.map('map', {
     center: [51.505, -0.09],
-    zoom: map_zoom_rate.value
+    zoom: map_zoom_rate.value,
+    attributionControl: false,
+    zoomControl: false
   })
 
   const user_name = 'tfsyg9b2ce'

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useCityPicFeatStore } from '@/stores/cityPicFeat'
 import HistgramChartSvg from './HistgramChartSvg.vue'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 const cityPicFeatsData = useCityPicFeatStore()
 const feats_show = ref([true, false, false, false, true, false])
@@ -38,6 +38,71 @@ const filter_show_items_name = [
 function switch_filter_choose(filter_item_idx: number) {
   feats_show.value[filter_item_idx] = !feats_show.value[filter_item_idx]
 }
+
+// 搜索过滤城市的部分
+const if_show_filter_box = ref(false)
+watch(
+  () => cityPicFeatsData.main_sel_show_view,
+  (newVal) => {
+    if (newVal != -1) if_show_filter_box.value = false
+  }
+)
+function switch_show_cities_filter() {
+  if_show_filter_box.value = !if_show_filter_box.value
+}
+const cities_data_filter = ref([] as boolean[])
+watch(
+  () => cityPicFeatsData.cities_names,
+  (newVal) => {
+    cities_data_filter.value = new Array<boolean>(newVal.length).fill(true)
+  }
+)
+function switch_filter_all() {
+  let target_state = true
+  cities_data_filter.value.forEach((filter_city) => {
+    if (filter_city) target_state = false
+  })
+  for (let i = 0; i < cities_data_filter.value.length; i += 1) {
+    cities_data_filter.value[i] = target_state
+  }
+}
+const cities_search_content = ref('')
+const search_cities_res = computed(() => {
+  const res = [] as number[]
+  for (let i = 0; i < cities_data_filter.value.length; i += 1) {
+    if (cityPicFeatsData.cities_names[i].includes(cities_search_content.value)) {
+      res.push(i)
+    }
+  }
+  return res
+})
+const cities_sel_status = (city_idx: number) => {
+  if (cities_data_filter.value.length <= city_idx) return false
+  else return cities_data_filter.value[city_idx]
+}
+function switch_city_show_status(city_idx: number) {
+  cities_data_filter.value[city_idx] = !cities_data_filter.value[city_idx]
+}
+const cities_colors_str = computed(() => {
+  const res = [] as string[]
+  cityPicFeatsData.cities_colors.forEach((city_color) => {
+    res.push(`hsla(${city_color.h}, ${city_color.s}%, ${city_color.l}%, ${city_color.a})`)
+  })
+  return res
+})
+// 过滤结果
+const filter_show_res = computed(() => {
+  const res = [] as { name: string; city_idx: number }[]
+  cities_data_filter.value.forEach((city_if_show, city_idx) => {
+    if (city_if_show) {
+      res.push({
+        name: cityPicFeatsData.cities_names[city_idx],
+        city_idx: city_idx
+      })
+    }
+  })
+  return res
+})
 </script>
 
 <template>
@@ -59,7 +124,7 @@ function switch_filter_choose(filter_item_idx: number) {
       <div class="city_filter_box">
         <span class="filter_title"> Cities </span>
 
-        <span class="filter_selection">
+        <span class="filter_selection" @click="switch_show_cities_filter">
           <span> all </span>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -83,6 +148,47 @@ function switch_filter_choose(filter_item_idx: number) {
             </defs>
           </svg>
         </span>
+
+        <div class="city_filter_sel_box" v-show="if_show_filter_box">
+          <div class="filter_box_title" @click="switch_filter_all">Legend</div>
+          <form class="search_input_box">
+            <input type="text" placeholder="city" v-model="cities_search_content" />
+            <button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <path
+                  d="M12.9167 11.6667H12.2583L12.025 11.4417C12.8699 10.4617 13.3343 9.21058 13.3333 7.91667C13.3333 6.84535 13.0157 5.7981 12.4205 4.90733C11.8253 4.01656 10.9793 3.3223 9.98954 2.91232C8.99977 2.50235 7.91066 2.39508 6.85993 2.60408C5.8092 2.81309 4.84404 3.32897 4.08651 4.08651C3.32897 4.84404 2.81309 5.8092 2.60408 6.85993C2.39508 7.91066 2.50235 8.99977 2.91232 9.98954C3.3223 10.9793 4.01656 11.8253 4.90733 12.4205C5.7981 13.0157 6.84535 13.3333 7.91667 13.3333C9.25834 13.3333 10.4917 12.8417 11.4417 12.025L11.6667 12.2583V12.9167L15.8333 17.075L17.075 15.8333L12.9167 11.6667ZM7.91667 11.6667C5.84167 11.6667 4.16667 9.99167 4.16667 7.91667C4.16667 5.84167 5.84167 4.16667 7.91667 4.16667C9.99167 4.16667 11.6667 5.84167 11.6667 7.91667C11.6667 9.99167 9.99167 11.6667 7.91667 11.6667Z"
+                  fill="#999999"
+                />
+              </svg>
+            </button>
+          </form>
+          <div class="filter_list">
+            <div
+              class="filter_item"
+              v-for="(city_idx, city_show_idx) in search_cities_res"
+              :key="city_show_idx"
+              :class="{ sel_item: cities_sel_status(city_idx) }"
+              @click="switch_city_show_status(city_idx)"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="17"
+                viewBox="0 0 16 17"
+                fill="none"
+              >
+                <circle cx="8" cy="8.5" r="8" :fill="cities_colors_str[city_idx]" />
+              </svg>
+              <span class="item_name">{{ cityPicFeatsData.cities_names[city_idx] }}</span>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="hist_filter_chosens_box">
@@ -138,20 +244,20 @@ function switch_filter_choose(filter_item_idx: number) {
     <div class="city_scale_feats_res_box" v-show="city_item_if_show">
       <div
         class="city_feats_item"
-        v-for="(city_name, city_idx) in cityPicFeatsData.cities_names"
-        :key="city_idx"
+        v-for="(city_obj, city_show_idx) in filter_show_res"
+        :key="city_show_idx"
       >
-        <div class="city_feats_item_title">{{ city_name }}</div>
+        <div class="city_feats_item_title">{{ city_obj.name }}</div>
         <div class="city_feats_item_hists">
           <div class="hist_graph_box" v-show="feats_show[0]">
             <HistgramChartSvg
-              :show_data="get_city_feat_data(city_idx, 0)"
+              :show_data="get_city_feat_data(city_obj.city_idx, 0)"
               :graph_title="'Street Scale'"
             />
           </div>
           <div class="hist_graph_box" v-show="feats_show[4]">
             <HistgramChartSvg
-              :show_data="get_city_feat_data(city_idx, 4)"
+              :show_data="get_city_feat_data(city_obj.city_idx, 4)"
               :graph_title="'Greenery'"
             />
           </div>
@@ -212,6 +318,8 @@ function switch_filter_choose(filter_item_idx: number) {
   flex-direction: row;
   justify-content: center;
   align-items: center;
+
+  position: relative;
 }
 .city_scale_feats_box_title .city_filter_box .filter_title {
   color: var(--black, #1a2134);
@@ -233,6 +341,7 @@ function switch_filter_choose(filter_item_idx: number) {
 
   border-radius: 4px;
   border: 1px solid var(--gray, #dfe1e5);
+  user-select: none;
   cursor: pointer;
 }
 .city_scale_feats_box_title .city_filter_box .filter_selection > span {
@@ -342,5 +451,145 @@ function switch_filter_choose(filter_item_idx: number) {
   padding-bottom: 5px;
 
   display: inline-block;
+}
+</style>
+<style scoped>
+.city_filter_sel_box {
+  display: flex;
+  width: 216px;
+  padding-bottom: 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 4px;
+  border: 1px solid var(--Grays-Black, #000);
+  background: var(--light_gray, #f4f4f4);
+
+  position: absolute;
+  right: 0px;
+  top: 50px;
+  /* top: 0; */
+
+  z-index: 999;
+  overflow: hidden;
+}
+.city_filter_sel_box .filter_box_title {
+  display: flex;
+  padding: 8px 16px;
+  align-items: center;
+  gap: 10px;
+  align-self: stretch;
+
+  /* border-radius: 4px 4px 0px 0px; */
+  background: var(--Grays-Black, #000);
+
+  color: var(--white, #fff);
+
+  /* title_text */
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+
+  user-select: none;
+  cursor: pointer;
+}
+.city_filter_sel_box .search_input_box {
+  display: flex;
+  width: calc(184px - 32px);
+  padding: 8px 16px;
+  justify-content: space-between;
+  align-items: center;
+
+  border-radius: 4px;
+  border: 1px solid var(--gray, #dfe1e5);
+}
+.city_filter_sel_box .search_input_box > input {
+  width: calc(100% - 20px);
+  outline: none;
+  border: none;
+  padding: 0;
+  background: none;
+  margin: 0;
+
+  color: var(--dark_gray, #999);
+
+  /* tab_text */
+  font-family: Inter;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+.city_filter_sel_box .search_input_box button {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+.city_filter_sel_box .search_input_box button > svg {
+  width: 100%;
+  height: 100%;
+}
+.city_filter_sel_box .filter_list {
+  display: flex;
+  width: calc(184px - 10px);
+  height: 206px;
+  padding: 8px 0px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-left: 10px;
+}
+.city_filter_sel_box .filter_list .filter_item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: stretch;
+
+  cursor: pointer;
+}
+.city_filter_sel_box .filter_list .filter_item.sel_item > span {
+  color: #000;
+}
+.city_filter_sel_box .filter_list .filter_item:not(.sel_item) {
+  color: var(--dark_gray, #999);
+}
+.city_filter_sel_box .filter_list .filter_item > svg {
+  width: 16px;
+  height: 16px;
+}
+.city_filter_sel_box .filter_list .filter_item > span {
+  /* body_text */
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+
+  user-select: none;
+}
+
+/* 滚轮 */
+.city_filter_sel_box .filter_list::-webkit-scrollbar {
+  width: 10px;
+}
+.city_filter_sel_box .filter_list::-webkit-scrollbar-thumb {
+  background-color: #b6b6b6;
+  border-radius: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.city_filter_sel_box .filter_list::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
+}
+
+.city_filter_sel_box .filter_list::-webkit-scrollbar-track {
+  background-color: #e1e1e1;
+  border-radius: 10px;
 }
 </style>

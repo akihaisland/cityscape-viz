@@ -8,6 +8,8 @@ import os
 app = Flask(__name__)
 CORS(app)
 
+data_apth = "./"
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -38,6 +40,10 @@ def req_tsne_res():
 
     # 线程使用tsne进行计算
     tsne_res_file = f'./data/embeds_tsne_res/{vec_len}.txt'
+    # test_a = os.listdir(f'./data/embeds_tsne_res/')
+    # test_b = os.getcwd()
+    # print("test_b: "+test_b)
+    # print(os.path)
     if os.path.exists(tsne_res_file):
         tsne_res = np.genfromtxt(tsne_res_file).tolist()
     else:
@@ -67,7 +73,8 @@ def req_greenery_data():
 @app.route('/api/data_cities')
 def req_data_labels():
     vec_len = request.args.get("vec_len", 3000, int)
-    res = np.genfromtxt("./data/test_labels.txt", dtype=int)[get_random_sample(vec_len)].tolist()
+    # res = np.genfromtxt("./data/test_labels.txt", dtype=int)[get_random_sample(vec_len)].tolist()
+    res = np.genfromtxt("./data/test_preds.txt", dtype=int, delimiter=",")[get_random_sample(vec_len), 1].tolist()
 
     # labels对应的城市列表
     complete_city_list = ['Amsterdam', 'Athens', 'Atlanta', 'Auckland', 'Bangalore',
@@ -222,5 +229,5 @@ def req_data_colors():
 # missing Facade material, Architectural style, Greenery, Urban sign
 
 if __name__ == '__main__':
-    app.run(debug=True, host="0.0.0.0", port=5050)
+    app.run(host="0.0.0.0", port=5050)
     # req_data_colors()

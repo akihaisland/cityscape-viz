@@ -9,7 +9,8 @@ interface HslaColor {
   a: number
 }
 
-const backend_url = 'http://10.7.168.50:5050'
+// const backend_url = 'http://10.7.168.50:5050'
+const backend_url = 'http://47.120.10.244:5050/'
 
 export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // tsne降维后的坐标以及各种信息
@@ -39,7 +40,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   const cities_colors = ref([] as HslaColor[])
   const culture_groups_colors = ref([] as HslaColor[])
   // cul_group_status // 多种cul group的呈现形式
-  const cul_group_status = ref(0)
+  const cul_group_status = ref(1)
 
   async function init_all_feats() {
     const test_num = 30000
@@ -304,6 +305,8 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     return res
   })
 
+  // 当前的主视图
+  const main_sel_show_view = ref(-1) // 0散点图 1地图
   return {
     tsne_pos,
     street_scales,
@@ -333,6 +336,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     cities_pos,
     city_closeness_centrality,
     cities2cul_group_idx,
-    cities_tsne_pos
+    cities_tsne_pos,
+    main_sel_show_view
   }
 })
