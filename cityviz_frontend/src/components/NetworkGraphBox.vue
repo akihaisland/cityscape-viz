@@ -57,13 +57,39 @@ function get_city_color(city_idx: number) {
 function map_std_val2svg_pos(std_val: number) {
   return std_val * 100 + 200
 }
+const cities_node_pos = computed(() => {
+  const res = [] as { pos: number[]; city_idx: number }[]
+  cityPicFeatsData.cities_tsne_pos.forEach((city_node_pos, city_idx) => {
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[city_idx]) return
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[city_idx]
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      return
 
+    res.push({ pos: city_node_pos, city_idx: city_idx })
+  })
+  return res
+})
 const cities_edges = computed(() => {
   const res = [] as { start: number[]; end: number[]; sim: number; mid: number[]; w: number }[]
   const cities_num = cityPicFeatsData.cities_tsne_pos.length
   for (let c1_idx = 0; c1_idx < cities_num; c1_idx += 1) {
     for (let c2_idx = 0; c2_idx < cities_num; c2_idx += 1) {
       if (c1_idx <= c2_idx) continue
+      if (
+        cityPicFeatsData.now_show_status == 0 &&
+        (!cityPicFeatsData.sel_show_cities[c1_idx] || !cityPicFeatsData.sel_show_cities[c2_idx])
+      )
+        continue
+      const cul1_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      if (
+        cityPicFeatsData.now_show_status == 1 &&
+        (!cityPicFeatsData.sel_show_culture_groups[cul1_idx] ||
+          !cityPicFeatsData.sel_show_culture_groups[cul2_idx])
+      )
+        continue
+
+      // 没被选中 可以正常显示
       const cities_sim =
         (cityPicFeatsData.normalized_cities_conf_matrix[c1_idx][c2_idx] +
           cityPicFeatsData.normalized_cities_conf_matrix[c2_idx][c1_idx]) /
@@ -102,25 +128,25 @@ const cities_edges = computed(() => {
             :stroke-width="edge_pos.w"
           />
           <circle
-            v-for="(city_tsne_pos, city_idx) in cityPicFeatsData.cities_tsne_pos"
+            v-for="(city_tsne_pos_obj, city_idx) in cities_node_pos"
             :key="city_idx"
-            :cx="map_std_val2svg_pos(city_tsne_pos[0])"
-            :cy="map_std_val2svg_pos(city_tsne_pos[1])"
+            :cx="map_std_val2svg_pos(city_tsne_pos_obj.pos[0])"
+            :cy="map_std_val2svg_pos(city_tsne_pos_obj.pos[1])"
             r="3"
             stroke="#fff"
             stroke-width="1"
-            :fill="get_city_color(city_idx)"
+            :fill="get_city_color(city_tsne_pos_obj.city_idx)"
           />
           <text
-            v-for="(city_tsne_pos, city_idx) in cityPicFeatsData.cities_tsne_pos"
+            v-for="(city_tsne_pos_obj, city_idx) in cities_node_pos"
             :key="city_idx"
-            :x="map_std_val2svg_pos(city_tsne_pos[0])"
-            :y="map_std_val2svg_pos(city_tsne_pos[1]) - 5"
+            :x="map_std_val2svg_pos(city_tsne_pos_obj.pos[0])"
+            :y="map_std_val2svg_pos(city_tsne_pos_obj.pos[1]) - 5"
             font-size="3"
             fill="#fff"
             text-anchor="middle"
           >
-            {{ cityPicFeatsData.cities_names[city_idx] }}
+            {{ cityPicFeatsData.cities_names[city_tsne_pos_obj.city_idx] }}
           </text>
         </svg>
       </div>

@@ -50,50 +50,64 @@ watch(
 function switch_show_cities_filter() {
   if_show_filter_box.value = !if_show_filter_box.value
 }
-const cities_data_filter = ref([] as boolean[])
-watch(
-  () => cityPicFeatsData.cities_names,
-  (newVal) => {
-    cities_data_filter.value = new Array<boolean>(newVal.length).fill(true)
-  }
-)
+// const cities_data_filter = ref([] as boolean[])
+// watch(
+//   () => cityPicFeatsData.cities_names,
+//   (newVal) => {
+//     cities_data_filter.value = new Array<boolean>(newVal.length).fill(true)
+//   }
+// )
 function switch_filter_all() {
   let target_state = true
-  cities_data_filter.value.forEach((filter_city) => {
+  cityPicFeatsData.sel_show_cities.forEach((filter_city) => {
     if (filter_city) target_state = false
   })
-  for (let i = 0; i < cities_data_filter.value.length; i += 1) {
-    cities_data_filter.value[i] = target_state
+  for (let i = 0; i < cityPicFeatsData.sel_show_cities.length; i += 1) {
+    cityPicFeatsData.sel_show_cities[i] = target_state
   }
 }
-const cities_search_content = ref('')
-const search_cities_res = computed(() => {
-  const res = [] as number[]
-  for (let i = 0; i < cities_data_filter.value.length; i += 1) {
-    if (cityPicFeatsData.cities_names[i].includes(cities_search_content.value)) {
-      res.push(i)
-    }
-  }
-  return res
-})
-const cities_sel_status = (city_idx: number) => {
-  if (cities_data_filter.value.length <= city_idx) return false
-  else return cities_data_filter.value[city_idx]
-}
-function switch_city_show_status(city_idx: number) {
-  cities_data_filter.value[city_idx] = !cities_data_filter.value[city_idx]
-}
-const cities_colors_str = computed(() => {
-  const res = [] as string[]
-  cityPicFeatsData.cities_colors.forEach((city_color) => {
-    res.push(`hsla(${city_color.h}, ${city_color.s}%, ${city_color.l}%, ${city_color.a})`)
-  })
-  return res
-})
+// const cities_search_content = ref('')
+// const search_cities_res = computed(() => {
+//   const res = [] as number[]
+//   for (let i = 0; i < cities_data_filter.value.length; i += 1) {
+//     if (cityPicFeatsData.cities_names[i].includes(cities_search_content.value)) {
+//       res.push(i)
+//     }
+//   }
+//   return res
+// })
+// const cities_sel_status = (city_idx: number) => {
+//   if (cityPicFeatsData.sel_show_cities.length <= city_idx) return false
+//   else return cityPicFeatsData.sel_show_cities[city_idx]
+// }
+// function switch_city_show_status(city_idx: number) {
+//   cities_data_filter.value[city_idx] = !cities_data_filter.value[city_idx]
+// }
+// const cities_colors_str = computed(() => {
+//   const res = [] as string[]
+//   cityPicFeatsData.cities_colors.forEach((city_color) => {
+//     res.push(`hsla(${city_color.h}, ${city_color.s}%, ${city_color.l}%, ${city_color.a})`)
+//   })
+//   return res
+// })
 // 过滤结果
+const city_search_content = ref('')
+// const filter_show_res = computed(() => {
+//   const res = [] as { name: string; city_idx: number }[]
+//   cityPicFeatsData.cities_names.forEach((city_name, city_idx) => {
+//     if (city_name.includes(city_search_content.value)) {
+//       res.push({
+//         name: cityPicFeatsData.cities_names[city_idx],
+//         city_idx: city_idx
+//       })
+//     }
+//   })
+//   return res
+// })
+
 const filter_show_res = computed(() => {
   const res = [] as { name: string; city_idx: number }[]
-  cities_data_filter.value.forEach((city_if_show, city_idx) => {
+  cityPicFeatsData.sel_show_cities.forEach((city_if_show, city_idx) => {
     if (city_if_show) {
       res.push({
         name: cityPicFeatsData.cities_names[city_idx],
@@ -103,6 +117,32 @@ const filter_show_res = computed(() => {
   })
   return res
 })
+const cities_colors_str = computed(() => {
+  const res = [] as string[]
+  cityPicFeatsData.cities_colors.forEach((city_color) => {
+    res.push(`hsla(${city_color.h}, ${city_color.s}%, ${city_color.l}%, ${city_color.a})`)
+  })
+  return res
+})
+
+// 选择城市的filter box
+const city_sel_status = (city_idx: number) => {
+  if (cityPicFeatsData.sel_show_cities == undefined) return false
+  if (cityPicFeatsData.sel_show_cities.length <= city_idx) return false
+  else return cityPicFeatsData.sel_show_cities[city_idx]
+}
+const search_cities_res = computed(() => {
+  const res = [] as number[]
+  cityPicFeatsData.cities_names.forEach((city_name, city_idx) => {
+    if (city_name.includes(city_search_content.value)) {
+      res.push(city_idx)
+    }
+  })
+  return res
+})
+function switch_city_show_status(city_idx: number) {
+  cityPicFeatsData.sel_show_cities[city_idx] = !cityPicFeatsData.sel_show_cities[city_idx]
+}
 </script>
 
 <template>
@@ -152,7 +192,7 @@ const filter_show_res = computed(() => {
         <div class="city_filter_sel_box" v-show="if_show_filter_box">
           <div class="filter_box_title" @click="switch_filter_all">Legend</div>
           <form class="search_input_box">
-            <input type="text" placeholder="city" v-model="cities_search_content" />
+            <input type="text" placeholder="city" v-model="city_search_content" />
             <button>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -173,7 +213,7 @@ const filter_show_res = computed(() => {
               class="filter_item"
               v-for="(city_idx, city_show_idx) in search_cities_res"
               :key="city_show_idx"
-              :class="{ sel_item: cities_sel_status(city_idx) }"
+              :class="{ sel_item: city_sel_status(city_idx) }"
               @click="switch_city_show_status(city_idx)"
             >
               <svg

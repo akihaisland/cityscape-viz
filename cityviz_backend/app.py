@@ -82,9 +82,9 @@ def req_data_labels():
         'Brisbane', 'Brussels', 'Bucharest', 'Budapest', 'Buenos Aires',
         'Chengdu', 'Chicago', 'Copenhagen', 'Dallas', 'Denver', 'Dubai',
         'Dublin', 'Frankfurt', 'Geneva', 'Guangzhou', 'Hamburg',
-        'Hongkong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg',
-        'KualaLumpur', 'Lima', 'Lisbon', 'London', 'Los Angeles',
-        'Luxembourg', 'Madrid', 'Manila', 'Melbourne', 'MexicoCity',
+        'Hong Kong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg',
+        'Kuala Lumpur', 'Lima', 'Lisbon', 'London', 'Los Angeles',
+        'Luxembourg', 'Madrid', 'Manila', 'Melbourne', 'Mexico City',
         'Miami', 'Milan', 'Montreal', 'Moscow', 'Mumbai', 'Munich',
         'Nairobi', 'New Delhi', 'New York', 'Oslo', 'Paris', 'Perth',
         'Prague', 'Rome', 'San Francisco', 'Sao Paulo', 'Santiago', 'Sydney',
@@ -94,11 +94,11 @@ def req_data_labels():
     
     #文化圈分类
     Germanic_Europe = ['Hamburg', 'Berlin', 'Luxembourg', 'Amsterdam', 'Zurich', 'Frankfurt', 'Munich', 'Vienna']
-    Latin_America = ['Lima', 'Sao Paulo', 'Bogota', 'Santiago', 'MexicoCity', 'Buenos Aires']
-    Confucian_Asia = ['Shenzhen', 'Shanghai', 'Guangzhou', 'Beijing', 'Tokyo', 'Hongkong', 'Singapore', 'Taipei', 'Tianjin','Seoul', 'Chengdu']
+    Latin_America = ['Lima', 'Sao Paulo', 'Bogota', 'Santiago', 'Mexico City', 'Buenos Aires']
+    Confucian_Asia = ['Shenzhen', 'Shanghai', 'Guangzhou', 'Beijing', 'Tokyo', 'Hong Kong', 'Singapore', 'Taipei', 'Tianjin','Seoul', 'Chengdu']
     Anglo = ['Auckland', 'Johannesburg', 'San Francisco', 'Dallas', 'Vancouver', 'Houston', 'New York', 'Melbourne', 'Montreal', 'Washington', 'Chicago', 'Dublin', 'Miami', 'Boston', 'Toronto', 'Los Angeles', 'London', 'Denver', 'Atlanta', 'Perth', 'Brisbane', 'Sydney']
     Sub_Sahara_Africa = ['Nairobi']
-    Southern_Asia = ['Mumbai', 'Jakarta', 'KualaLumpur', 'Bangalore', 'Bangkok', 'Manila', 'New Delhi']
+    Southern_Asia = ['Mumbai', 'Jakarta', 'Kuala Lumpur', 'Bangalore', 'Bangkok', 'Manila', 'New Delhi']
     Latin_Europe = ['Paris', 'Madrid', 'Geneva', 'Barcelona', 'Milan', 'Rome', 'Lisbon', 'Brussels', 'Tel Aviv']
     Eastern_Europe = ['Athens', 'Budapest', 'Bucharest', 'Moscow', 'Warsaw', 'Prague']
     Nordic_Europe = ['Oslo', 'Copenhagen', 'Stockholm']
@@ -181,9 +181,9 @@ def req_data_colors():
         'Brisbane', 'Brussels', 'Bucharest', 'Budapest', 'Buenos Aires',
         'Chengdu', 'Chicago', 'Copenhagen', 'Dallas', 'Denver', 'Dubai',
         'Dublin', 'Frankfurt', 'Geneva', 'Guangzhou', 'Hamburg',
-        'Hongkong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg',
-        'KualaLumpur', 'Lima', 'Lisbon', 'London', 'Los Angeles',
-        'Luxembourg', 'Madrid', 'Manila', 'Melbourne', 'MexicoCity',
+        'Hong Kong', 'Houston', 'Istanbul', 'Jakarta', 'Johannesburg',
+        'Kuala Lumpur', 'Lima', 'Lisbon', 'London', 'Los Angeles',
+        'Luxembourg', 'Madrid', 'Manila', 'Melbourne', 'Mexico City',
         'Miami', 'Milan', 'Montreal', 'Moscow', 'Mumbai', 'Munich',
         'Nairobi', 'New Delhi', 'New York', 'Oslo', 'Paris', 'Perth',
         'Prague', 'Rome', 'San Francisco', 'Sao Paulo', 'Santiago', 'Sydney',

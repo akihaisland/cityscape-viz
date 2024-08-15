@@ -150,16 +150,16 @@ def rgb_to_hsl(r, g, b):
     return h, s, l
 
 def convert_color2hsl():
-    with open('./data/cul_groups_colors.csv', 'r') as file:
+    with open('./data/cities_colors_new.csv', 'r') as file:
         reader = csv.DictReader(file, delimiter="\t")
         data = list(reader)
     new_data = []
     for city_color in data:
-        now_city = city_color["culture_group"]
+        now_city = city_color["city"]
         r,g,b = parse_rgb_color(city_color["color"])
         h,s,l = rgb_to_hsl(r, g, b)
         new_data.append({
-            "cul_group": now_city,
+            "city": now_city,
             "h": h*360,
             "s": s*100,
             "l": l*100,
@@ -167,9 +167,9 @@ def convert_color2hsl():
         })
 
     # 将 dict list 保存为 CSV 文件
-    with open('./data/cul_groups_hsla_colors.csv', 'w', newline='') as csvfile:
+    with open('./data/cities_hsla_colors.csv', 'w', newline='') as csvfile:
         # 创建 CSV 写入器,并指定列名
-        fieldnames = ['cul_group', 'h', 's', 'l', 'a']
+        fieldnames = ['city', 'h', 's', 'l', 'a']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
         # 写入表头

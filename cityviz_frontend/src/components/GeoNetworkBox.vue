@@ -120,6 +120,20 @@ function redraw_edges_by_svg() {
   for (let c1_idx = 0; c1_idx < cities_num; c1_idx += 1) {
     for (let c2_idx = 0; c2_idx < cities_num; c2_idx += 1) {
       if (c1_idx <= c2_idx) continue
+      if (
+        cityPicFeatsData.now_show_status == 0 &&
+        (!cityPicFeatsData.sel_show_cities[c1_idx] || !cityPicFeatsData.sel_show_cities[c2_idx])
+      )
+        continue
+      const cul1_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      if (
+        cityPicFeatsData.now_show_status == 1 &&
+        (!cityPicFeatsData.sel_show_culture_groups[cul1_idx] ||
+          !cityPicFeatsData.sel_show_culture_groups[cul2_idx])
+      )
+        continue
+
       const start_pos = [cities_x.value[c1_idx], cities_y.value[c1_idx]]
       const end_pos = [cities_x.value[c2_idx], cities_y.value[c2_idx]]
       const mid_pos = [
@@ -169,6 +183,10 @@ function redraw_nodes_by_svg() {
   const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
   let inner_content = ''
   for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      continue
     const now_node_radius =
       (node_max_radius * cityPicFeatsData.city_closeness_centrality[i]) / max_r_val
     const now_city_color = hsl_color_obj2str(cities_color_after_view.value[i])
@@ -238,9 +256,29 @@ watch(
   { deep: true }
 )
 watch(
-  () => map_zoom_rate.value,
+  () => cityPicFeatsData.sel_show_cities,
   () => {
-    // redraw_nodes_on_map(false)
+    redraw_edges_by_svg()
+    redraw_nodes_by_svg()
+    redraw_cities_names_by_svg()
+  },
+  { deep: true }
+)
+watch(
+  () => cityPicFeatsData.sel_show_culture_groups,
+  () => {
+    redraw_edges_by_svg()
+    redraw_nodes_by_svg()
+    redraw_cities_names_by_svg()
+  },
+  { deep: true }
+)
+watch(
+  () => cityPicFeatsData.now_show_status,
+  () => {
+    redraw_edges_by_svg()
+    redraw_nodes_by_svg()
+    redraw_cities_names_by_svg()
   },
   { deep: true }
 )
