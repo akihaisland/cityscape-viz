@@ -81,7 +81,7 @@ const cities_edges = computed(() => {
       )
         continue
       const cul1_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
-      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c2_idx]
       if (
         cityPicFeatsData.now_show_status == 1 &&
         (!cityPicFeatsData.sel_show_culture_groups[cul1_idx] ||

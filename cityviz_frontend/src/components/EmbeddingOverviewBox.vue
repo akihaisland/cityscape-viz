@@ -9,20 +9,68 @@ function hsl_color_obj2str(color_obj: { h: number; s: number; l: number; a: numb
   else return `hsla(${color_obj.h}, ${color_obj.s}%, ${color_obj.l}%, ${color_obj.a})`
 }
 
+function hsls2rgbs(color_obj: { h: number; s: number; l: number; a: number }) {
+  let r, g, b
+
+  function hue2Rgb(p: number, q: number, t: number) {
+    if (t < 0) t += 1
+    if (t > 1) t -= 1
+    if (t < 1 / 6) return p + (q - p) * 6 * t
+    if (t < 1 / 2) return q
+    if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6
+    return p
+  }
+  let h = 0.5,
+    s = 1,
+    l = 1,
+    a = 0
+  if (color_obj != undefined) {
+    h = color_obj.h / 360
+    s = color_obj.s / 100
+    l = color_obj.l / 100
+    a = color_obj.a
+  }
+  let q = l < 0.5 ? l * (1 + s) : l + s - l * s
+  let p = 2 * l - q
+  r = hue2Rgb(p, q, h + 1 / 3)
+  g = hue2Rgb(p, q, h)
+  b = hue2Rgb(p, q, h - 1 / 3)
+
+  return { r: Math.round(r * 255), g: Math.round(g * 255), b: Math.round(b * 255), a: a }
+}
+function hsla_color2rgba_str(color_obj: { h: number; s: number; l: number; a: number }) {
+  const rgba_obj = hsls2rgbs(color_obj)
+  // return `rgba(${rgba_obj.r}, ${rgba_obj.g}, ${rgba_obj.b}, ${rgba_obj.a})`
+  return `rgba(${rgba_obj.r}, ${rgba_obj.g}, ${rgba_obj.b})`
+  // return '#1772F6aa'
+}
+function hsla_color2hex_str(color_obj: { h: number; s: number; l: number; a: number }) {
+  const rgba_obj = hsls2rgbs(color_obj)
+  const toHex = (color: number) => {
+    let hex = color.toString(16)
+    return hex.length == 1 ? '0' + hex : hex
+  }
+  return '#' + toHex(rgba_obj.r) + toHex(rgba_obj.g) + toHex(rgba_obj.b)
+}
+
 function show_node_color(node_idx: number) {
   const color_obj = cityPicFeatsData.tsne_pts_color[node_idx]
   if (color_obj == undefined) {
     return {
-      node_color: `hsla(180, 100%, 100%, 0)`
+      // node_color: `hsla(180, 100%, 100%, 0)`
+      node_color: `rgba(0,0,0,0)`
     }
   } else if (cityPicFeatsData.cul_group_status == 1 && cityPicFeatsData.now_show_status == 1) {
     return {
-      node_color: `hsla(180, 100%, 100%, 0)`
+      // node_color: `hsla(180, 100%, 100%, 0)`
+      node_color: `rgba(0,0,0,0)`
     }
   }
-  return {
-    node_color: `hsla(${color_obj.h}, ${color_obj.s}%, ${color_obj.l}%, ${color_obj.a})`
-  }
+  // return {
+  //   node_color: `hsla(${color_obj.h}, ${color_obj.s}%, ${color_obj.l}%, ${color_obj.a})`
+  // }
+  // return { node_color: hsla_color2rgba_str(color_obj) }
+  return { node_color: hsla_color2hex_str(color_obj) }
 }
 
 const zoom_rate = ref(150)
@@ -115,14 +163,18 @@ function draw_scatter_KDE() {
       cul_group_mid[1] /= densityProgress[densityProgress.length - 1].coordinates[0][0].length
       tmp_cul_groups_center.push({
         pos: cul_group_mid,
-        color: hsl_color_obj2str(cul_group_color_obj)
+        // color: hsl_color_obj2str(cul_group_color_obj)
+        // color: hsla_color2rgba_str(cul_group_color_obj)
+        color: hsla_color2hex_str(cul_group_color_obj)
       })
 
       // 修改颜色
       cul_group_color_obj.s *= 1.1
       if (cul_group_color_obj.s > 100) cul_group_color_obj.s = 100
     }
-    const cul_group_color_str = hsl_color_obj2str(cul_group_color_obj)
+    // const cul_group_color_str = hsl_color_obj2str(cul_group_color_obj)
+    // const cul_group_color_str = hsla_color2rgba_str(cul_group_color_obj)
+    const cul_group_color_str = hsla_color2hex_str(cul_group_color_obj)
     svg
       .append('g')
       .attr('stroke-linejoin', 'round')

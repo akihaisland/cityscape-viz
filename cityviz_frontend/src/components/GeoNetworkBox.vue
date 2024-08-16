@@ -126,7 +126,7 @@ function redraw_edges_by_svg() {
       )
         continue
       const cul1_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
-      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c1_idx]
+      const cul2_idx = cityPicFeatsData.cities2cul_group_idx[c2_idx]
       if (
         cityPicFeatsData.now_show_status == 1 &&
         (!cityPicFeatsData.sel_show_culture_groups[cul1_idx] ||
@@ -217,6 +217,10 @@ function redraw_cities_names_by_svg() {
   let inner_content = ''
   const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
   for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      continue
     const now_node_radius =
       (node_max_radius * cityPicFeatsData.city_closeness_centrality[i]) / max_r_val
     if (i != 27)
