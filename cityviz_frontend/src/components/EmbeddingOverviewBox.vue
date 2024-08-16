@@ -219,6 +219,24 @@ function draw_scatter_KDE() {
 //   return []
 // })
 
+const nodes2show = computed(() => {
+  const res = [] as { x: number; y: number; color: string; data_idx: number }[]
+  cityPicFeatsData.std_tsne_pts.forEach((std_tsne_pt, data_idx) => {
+    const city_idx = cityPicFeatsData.idx2city_idxs[data_idx]
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[city_idx]
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[city_idx]) return
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      return
+    res.push({
+      x: std_tsne_pt[0],
+      y: std_tsne_pt[1],
+      color: show_node_color(data_idx).node_color,
+      data_idx: data_idx
+    })
+  })
+  return res
+})
+
 watch(
   () => cityPicFeatsData.sel_show_culture_groups,
   () => {
@@ -242,24 +260,6 @@ watch(
 // Create the horizontal and vertical scales.
 onMounted(async () => {
   await cityPicFeatsData.init_all_feats()
-})
-
-const axis_line_style = computed(() => {
-  const res = []
-  for (let i = 0; i <= 400; i += 25) {
-    let w = 0.5
-    let dash = '2,2'
-    if (i % 50 == 0) {
-      w = 1
-      dash = '2, 0'
-    }
-    res.push({
-      x: i,
-      w: w,
-      dash: dash
-    })
-  }
-  return res
 })
 
 // 返回视图主页面
@@ -512,30 +512,6 @@ function download_now_view() {
     >
       <div class="zoom_box" :style="{ transform: `scale(${zoom_rate}%)` }">
         <div class="move_box" :style="{ left: box_pos[0] + 'px', top: box_pos[1] + 'px' }">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" class="scatter_axis_board">
-            <!-- <line
-              v-for="(axis_obj, x_axis_idx) in axis_line_style"
-              :key="x_axis_idx"
-              x1="0"
-              :y1="axis_obj.x"
-              x2="400"
-              :y2="axis_obj.x"
-              :stroke-width="axis_obj.w"
-              stroke="#acacac"
-              :stroke-dasharray="axis_obj.dash"
-            />
-            <line
-              v-for="(axis_obj, x_axis_idx) in axis_line_style"
-              :key="x_axis_idx"
-              y1="0"
-              :x1="axis_obj.x"
-              y2="400"
-              :x2="axis_obj.x"
-              :stroke-width="axis_obj.w"
-              stroke="#acacac"
-              :stroke-dasharray="axis_obj.dash"
-            /> -->
-          </svg>
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 400 400"
@@ -561,19 +537,12 @@ function download_now_view() {
               !(cityPicFeatsData.now_show_status == 1 && cityPicFeatsData.cul_group_status == 1)
             "
           >
-            <!-- <circle
-              v-for="(node_pos, node_idx) in nodes_pos"
-              :key="node_idx"
-              :cx="node_pos[0]"
-              :cy="node_pos[1]"
-              r="1"
-            /> -->
             <circle
-              v-for="(node_pos, node_idx) in cityPicFeatsData.std_tsne_pts"
+              v-for="(node_pos_obj, node_idx) in nodes2show"
               :key="node_idx"
-              :cx="100 + node_pos[0] * 200"
-              :cy="100 + node_pos[1] * 200"
-              :fill="show_node_color(node_idx).node_color"
+              :cx="100 + node_pos_obj.x * 200"
+              :cy="100 + node_pos_obj.y * 200"
+              :fill="node_pos_obj.color"
               r="0.5"
             />
           </svg>
