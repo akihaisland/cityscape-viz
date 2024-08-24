@@ -74,9 +74,13 @@ const cities_node_pos = computed(() => {
       (cityPicFeatsData.city_closeness_centrality[city_idx] / max_r_val) *
         (node_max_r - node_min_r) +
       node_min_r
-    let now_tooltip_content = `City: ${cityPicFeatsData.cities_names[city_idx]}\nDegree Centrality: ${cityPicFeatsData.city_closeness_centrality[city_idx]}`
+    let now_tooltip_content =
+      `City: ${cityPicFeatsData.cities_names[city_idx]}\n` +
+      `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[city_idx].toFixed(5)}`
     if (cityPicFeatsData.now_show_status == 1) {
-      now_tooltip_content = `Culture Group: ${cityPicFeatsData.culture_groups_names[cul_idx]}\nDegree Centrality: ${cityPicFeatsData.city_closeness_centrality[city_idx]}`
+      now_tooltip_content =
+        `Culture Group: ${cityPicFeatsData.culture_groups_names[cul_idx]}\n` +
+        `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[city_idx].toFixed(5)}`
     }
     res.push({
       pos: city_node_pos,
@@ -120,7 +124,7 @@ const cities_edges = computed(() => {
         (cityPicFeatsData.normalized_cities_conf_matrix[c1_idx][c2_idx] +
           cityPicFeatsData.normalized_cities_conf_matrix[c2_idx][c1_idx]) /
         2
-      if (cities_sim <= 0.05) continue
+      if (cities_sim <= cityPicFeatsData.cities_sim_threshold) continue
       const start_pos = cityPicFeatsData.cities_tsne_pos[c1_idx]
       const end_pos = cityPicFeatsData.cities_tsne_pos[c2_idx]
       const mid_pos = [(start_pos[0] + end_pos[0]) / 2, (start_pos[1] + end_pos[1]) / 2]

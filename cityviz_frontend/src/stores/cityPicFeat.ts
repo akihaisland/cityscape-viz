@@ -9,8 +9,8 @@ interface HslaColor {
   a: number
 }
 
-// const backend_url = 'http://10.7.168.50:5050'
-const backend_url = 'http://47.120.10.244:5050/'
+const backend_url = 'http://10.7.168.50:5050'
+// const backend_url = 'http://47.120.10.244:5050/'
 
 export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // tsne降维后的坐标以及各种信息
@@ -46,25 +46,31 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // cul_group_status // 多种cul group的呈现形式
   const cul_group_status = ref(1)
 
+  const now_loading_progress = ref(0) // max 13
+
   async function init_all_feats() {
+    now_loading_progress.value = 0
     const test_num = 30000
     // 请求tsne降维的数据
     const req_tsne_res = (await axios.get(backend_url + '/api/tsneVec', {
       params: { vec_len: test_num }
     })) as { data: number[][] }
     tsne_pos.value = req_tsne_res.data
+    now_loading_progress.value += 1
 
     // 请求streetScale的数据
     const street_scales_req_res = (await axios.get(backend_url + '/api/streetScale', {
       params: { vec_len: test_num }
     })) as { data: number[] }
     street_scales.value = street_scales_req_res.data
+    now_loading_progress.value += 1
 
     // 请求greenery的数据
     const req_greenery_res = (await axios.get(backend_url + '/api/greenery', {
       params: { vec_len: test_num }
     })) as { data: number[] }
     greenery.value = req_greenery_res.data
+    now_loading_progress.value += 1
 
     // 请求color的数据
     const req_building_color_res = (await axios.get(backend_url + '/api/building_color', {
@@ -72,6 +78,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { data: number[][]; tags: string[] } }
     building_colors.value = req_building_color_res.data.data
     building_color_attrs.value = req_building_color_res.data.tags
+    now_loading_progress.value += 1
 
     // 请求urban sign的数据
     const req_urban_sign_res = (await axios.get(backend_url + '/api/urban_sign', {
@@ -79,6 +86,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { data: number[][]; tags: string[] } }
     urban_sign.value = req_urban_sign_res.data.data
     urban_sign_attrs.value = req_urban_sign_res.data.tags
+    now_loading_progress.value += 1
 
     // 请求facade_material的数据
     const req_facade_material_res = (await axios.get(backend_url + '/api/facade_material', {
@@ -86,6 +94,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { data: number[][]; tags: string[] } }
     facade_material.value = req_facade_material_res.data.data
     facade_material_attrs.value = req_facade_material_res.data.tags
+    now_loading_progress.value += 1
 
     // 请求architectural_style的数据
     const req_architectural_style_res = (await axios.get(backend_url + '/api/architectural_style', {
@@ -93,6 +102,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { data: number[][]; tags: string[] } }
     architectural_style.value = req_architectural_style_res.data.data
     architectural_style_attrs.value = req_architectural_style_res.data.tags
+    now_loading_progress.value += 1
 
     // 请求城市的数据
     const req_in_cities_res = (await axios.get(backend_url + '/api/data_cities', {
@@ -112,6 +122,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     const cul_names = req_in_cities_res.data.culture_groups_names
     culture_groups_names.value = cul_names
     cities_in_culture_groups.value = req_in_cities_res.data.cities_in_culture_groups
+    now_loading_progress.value += 1
 
     // 设置所有节点为被选中状态
     let sel_show_nodes_value = [] as boolean[]
@@ -131,6 +142,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
       sel_show_nodes_value.push(true)
     })
     sel_show_culture_groups.value = sel_show_nodes_value
+    now_loading_progress.value += 1
 
     // 请求混淆矩阵的数据
     const req_conf_matrix_res = (await axios.get(backend_url + '/api/normalized_conf_matrix', {
@@ -138,6 +150,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { city: number[][]; cul_group: number[][] } }
     normalized_cities_conf_matrix.value = req_conf_matrix_res.data.city
     normalized_cul_groups_conf_matrix.value = req_conf_matrix_res.data.cul_group
+    now_loading_progress.value += 1
 
     // 请求城市位置的数据
     const req_cities_pos_res = (await axios.get(backend_url + '/api/cities_pos', {
@@ -148,12 +161,14 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
       tmp_cities_pos.push({ lon: Number(raw_city_pos.lon), lat: Number(raw_city_pos.lat) })
     })
     cities_pos.value = tmp_cities_pos
+    now_loading_progress.value += 1
 
     // 请求城市tsne位置的数据
     const req_cities_tsne_pos_res = (await axios.get(backend_url + '/api/cities_tsne_pos', {
       params: {}
     })) as { data: number[][] }
     cities_tsne_pos.value = req_cities_tsne_pos_res.data
+    now_loading_progress.value += 1
 
     // 请求配色数据
     const req_colors_res = (await axios.get(backend_url + '/api/colors', {
@@ -161,6 +176,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: { cities_colors: HslaColor[]; cul_groups_colors: HslaColor[] } }
     cities_colors.value = req_colors_res.data.cities_colors
     culture_groups_colors.value = req_colors_res.data.cul_groups_colors
+    now_loading_progress.value += 1
   }
 
   const tsne_range = computed(() => {
@@ -310,7 +326,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   })
 
   // 每个城市节点的接近中心性
-  const cities_sim_threshold = 0.04
+  const cities_sim_threshold = 0.01
   const city_closeness_centrality = computed(() => {
     const res = [] as number[]
     const city_num = normalized_cities_conf_matrix.value.length
@@ -332,7 +348,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
         )
           tmp += 1
       }
-      res.push(tmp)
+      res.push(tmp / (city_num - 1))
     }
     return res
   })
@@ -351,6 +367,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // 当前的主视图
   const main_sel_show_view = ref(-1) // 0散点图 1地图
   return {
+    now_loading_progress,
     tsne_pos,
     street_scales,
     building_color_attrs,

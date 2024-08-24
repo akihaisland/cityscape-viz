@@ -242,7 +242,7 @@ def req_urban_sign_data():
         stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
 
 
-    attr_names = ['Plaque', 'Engrave_wall', 'Poster', 'Stand_alone', 'Hanging', 'Banner_pixel']
+    attr_names = ['Plaque', 'Engrave Wall', 'Poster', 'Stand Alone', 'Hanging', 'Banner']
     return jsonify({"data": stat.tolist(), "tags": attr_names})
 
 @app.route('/api/facade_material')
@@ -256,7 +256,7 @@ def req_facade_material_data():
     for i in range(cities_num):
         stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
 
-    attr_names = ['B', 'C', 'G', 'M', 'O', 'P', 'S', 'W']
+    attr_names = ['Brick', 'Concrete', 'Glass', 'Metal', 'Other', 'Paint', 'Stone', 'Wood']
     return jsonify({"data": stat.tolist(), "tags": attr_names})
 
 @app.route('/api/architectural_style')

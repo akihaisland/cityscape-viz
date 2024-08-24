@@ -104,7 +104,7 @@ function switch_filter_all() {
   <div class="main_content">
     <div class="title_pos">
       <div class="logo_box" style="width: 100%">
-        <img src="/src/assets/logo.png" alt="" srcset="" width="100%" />
+        <img src="/src/assets/logo.png" alt="" srcset="" width="80%" />
       </div>
       <!-- <div class="title_content">CityViz</div> -->
     </div>
@@ -355,16 +355,20 @@ function switch_filter_all() {
   justify-content: center;
   align-items: center;
   /* align-content: center; */
+  padding-top: 32px;
 }
 .title_pos .logo_box {
-  /* width: 72px; */
   height: 72px;
+  /* height: 56px; */
   /* background-color: #d9d9d9; */
   border-radius: 4px;
 
   display: flex;
   align-items: center;
-  justify-content: center;
+  /* justify-content: center; */
+
+  text-align: left;
+  justify-content: left;
 }
 .title_pos .title_content {
   padding: 0 10px;
@@ -386,10 +390,11 @@ function switch_filter_all() {
 
 /* 下面盒子的内容 */
 .network_graph_box {
-  padding: 15px 32px;
+  padding: 16px 32px;
   width: calc(100% - 32px * 2);
   /* height: 426px; */
-  height: calc(100% - 520px);
+  /* height: calc(100% - 524px); */
+  height: calc(100% - 560px);
 
   position: absolute;
   left: 0;

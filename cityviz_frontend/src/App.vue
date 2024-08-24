@@ -5,6 +5,7 @@ import TitleView from './views/TitleView.vue'
 import EmbeddingOverviewBox from './components/EmbeddingOverviewBox.vue'
 import GeoNetworkBox from './components/GeoNetworkBox.vue'
 import CityScaleFeatsBox from './components/CityScaleFeatsBox.vue'
+import ProgressView from './views/ProgressView.vue'
 import { ref } from 'vue'
 import { useCityPicFeatStore } from '@/stores/cityPicFeat'
 
@@ -64,6 +65,7 @@ function set_show_view(target: number) {
       style="position: absolute; width: 100%; height: 1px; background-color: black; top: 56px"
     ></div> -->
   </main>
+  <ProgressView class="progress_view" v-if="cityPicFeatsData.now_loading_progress < 13" />
 </template>
 
 <style scoped>
@@ -123,7 +125,9 @@ main.full_show .left_content:has(.geo_network_view_box.full_show) .embedding_vie
 }
 main.full_show .left_content .embedding_view_box.full_show,
 main.full_show .left_content .geo_network_view_box.full_show {
-  height: calc(100% - 16px);
+  /* height: calc(100% - 16px); */
+  height: 100%;
+  /* padding-bottom: 0; */
 }
 
 /* 展示不同窗口的导航 */
@@ -159,5 +163,11 @@ main.full_show .left_content .geo_network_view_box.full_show {
 .window_show_nav button.sel_show_window {
   border-radius: 4px;
   background: var(--green, #47f6e4);
+}
+
+.progress_view {
+  position: absolute;
+  height: 100%;
+  width: 100%;
 }
 </style>

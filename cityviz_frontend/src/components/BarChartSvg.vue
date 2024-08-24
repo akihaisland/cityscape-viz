@@ -127,8 +127,8 @@ const y_axis_data = computed(() => {
   // }
   const per_bar_h = (svg_size.value.h - 20 - 15) / (bars_num + 0.5)
   const bars_t_pos = [svg_size.value.h - 20] as number[]
-  const bars_t_title = ['0'] as string[]
   const axis_start_val = Math.floor(data_range.value[0] / delta_y.value) * delta_y.value
+  const bars_t_title = [num2format_str(axis_start_val)] as string[]
   for (let i = 1; i <= bars_num; i++) {
     bars_t_pos.push(bars_t_pos[0] - i * per_bar_h)
     bars_t_title.push(num2format_str(axis_start_val + i * delta_y.value))

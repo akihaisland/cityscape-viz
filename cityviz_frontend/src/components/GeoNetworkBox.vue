@@ -75,12 +75,12 @@ const hover_node_tooltip_pos = computed(() => {
     const father_pos_rect = father_ele.getBoundingClientRect()
     let tooltip_content =
       `City: ${cityPicFeatsData.cities_names[now_hover_node.value]}\n` +
-      `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value]}`
+      `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value].toFixed(5)}`
     if (cityPicFeatsData.now_show_status == 1) {
       const now_cul = cityPicFeatsData.cities2cul_group_idx[now_hover_node.value]
       tooltip_content =
         `Culture Group: ${cityPicFeatsData.culture_groups_names[now_cul]}\n` +
-        `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value]}`
+        `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value].toFixed(5)}`
     }
     return {
       x: now_hover_pos[0] - father_pos_rect.left,
@@ -220,7 +220,7 @@ function gen_geo_edges_svg_elements() {
           cityPicFeatsData.normalized_cities_conf_matrix[c2_idx][c1_idx]) /
         2
       const now_edge_w = cities_sim * (edge_max_w - edge_min_w) + edge_min_w
-      if (cities_sim > cities_sim_threshold) {
+      if (cities_sim > cityPicFeatsData.cities_sim_threshold) {
         edges_show.push([c1_idx, c2_idx])
         const edge_id = `geo_edge_n${c1_idx}_${c2_idx}`
         inner_content += `<path d="${now_path_d}" stroke="${stroke_color}" stroke-width="${now_edge_w}" id=${edge_id} fill="none" />`
@@ -460,6 +460,16 @@ watch(
   { deep: true }
 )
 watch(
+  () => cityPicFeatsData.cities_sim_threshold,
+  () => {
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
+  },
+  { deep: true }
+)
+watch(
   () => cityPicFeatsData.main_sel_show_view,
   () => {
     map.invalidateSize(true)
@@ -490,6 +500,10 @@ onMounted(() => {
   map.addEventListener('moveend', () => {})
   if_map_loaded.value = true
 })
+
+function reset_threshold(target_val: number) {
+  cityPicFeatsData.cities_sim_threshold = target_val
+}
 </script>
 
 <template>
@@ -523,6 +537,44 @@ onMounted(() => {
         />
       </svg>
       <span class="title_content"> Geographic Network </span>
+      <div class="threshold_selection">
+        <span class="selection_name">Threshold</span>
+        <span class="selection_box">
+          <span class="selected_one">
+            <span> {{ cityPicFeatsData.cities_sim_threshold }} </span>
+            <button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+              >
+                <g clip-path="url(#clip0_4011_3497)">
+                  <path
+                    fill-rule="evenodd"
+                    clip-rule="evenodd"
+                    d="M9.41086 13.0892C9.56713 13.2454 9.77906 13.3332 10 13.3332C10.221 13.3332 10.4329 13.2454 10.5892 13.0892L15.3034 8.37501C15.4552 8.21784 15.5392 8.00733 15.5373 7.78884C15.5354 7.57034 15.4477 7.36133 15.2932 7.20682C15.1387 7.05232 14.9297 6.96468 14.7112 6.96278C14.4927 6.96088 14.2822 7.04487 14.125 7.19667L10 11.3217L5.87503 7.19667C5.71786 7.04487 5.50736 6.96088 5.28886 6.96278C5.07036 6.96468 4.86135 7.05232 4.70685 7.20682C4.55234 7.36133 4.4647 7.57034 4.4628 7.78884C4.4609 8.00733 4.5449 8.21784 4.6967 8.37501L9.41086 13.0892Z"
+                    fill="#999999"
+                  />
+                </g>
+                <defs>
+                  <clipPath id="clip0_4011_3497">
+                    <rect width="20" height="20" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </button>
+          </span>
+          <div class="select_option_box">
+            <div class="select_inner_option_box">
+              <div class="select_option" @click="reset_threshold(0.01)">0.01</div>
+              <div class="select_option" @click="reset_threshold(0.02)">0.02</div>
+              <div class="select_option" @click="reset_threshold(0.04)">0.04</div>
+            </div>
+          </div>
+        </span>
+      </div>
     </div>
     <div class="geo_network_place">
       <div id="map"></div>
@@ -558,7 +610,8 @@ onMounted(() => {
 
 .geo_network_box_title {
   width: 100%;
-  height: 20px;
+  /* height: 20px; */
+  height: 30px;
   padding-bottom: 8px;
 
   display: flex;
@@ -581,11 +634,13 @@ onMounted(() => {
   line-height: normal;
 
   padding: 0 10px;
+  width: calc(100% - 180px - 20px);
 }
 
 .geo_network_place {
   width: 100%;
-  height: calc(100% - 28px);
+  /* height: calc(100% - 28px); */
+  height: calc(100% - 38px);
   border-radius: 4px;
 
   background-color: azure;
@@ -618,5 +673,102 @@ onMounted(() => {
 /* edge信息 */
 .edge_hover_assist_tooltip::after {
   width: 150px;
+}
+</style>
+<style scoped>
+.threshold_selection {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+.threshold_selection > .selection_name {
+  color: #1a2134;
+  font-family: Inter;
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: normal;
+  padding-right: 10px;
+}
+.threshold_selection > .selection_box {
+  width: 87px;
+  border-radius: 4px;
+  border: 1px solid var(--gray, #dfe1e5);
+
+  position: relative;
+}
+.threshold_selection > .selection_box > .selected_one {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  width: calc(100% - 16px);
+  height: 100%;
+  padding: 4px 8px;
+}
+.threshold_selection > .selection_box > .selected_one > span {
+  color: var(--black, #1a2134);
+
+  /* body_text */
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+}
+.threshold_selection > .selection_box > .selected_one > button {
+  padding: 0;
+  outline: 0;
+  border: 0;
+  margin: 0;
+  background: none;
+
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  cursor: pointer;
+}
+.threshold_selection > .selection_box > .selected_one > button > svg {
+  width: 100%;
+  height: 100%;
+}
+.threshold_selection > .selection_box > .select_option_box {
+  position: absolute;
+  width: 100%;
+  top: 100%;
+  padding-top: 5px;
+
+  z-index: 999;
+}
+.threshold_selection > .selection_box > .select_option_box > .select_inner_option_box {
+  width: 100%;
+
+  border: 1px solid var(--gray, #dfe1e5);
+  border-radius: 4px;
+  overflow: hidden;
+  background-color: #fff;
+}
+.threshold_selection > .selection_box > .select_option_box .select_option {
+  width: calc(100% - 16px);
+  padding: 4px 8px;
+
+  color: var(--black, #1a2134);
+
+  /* body_text */
+  font-family: Inter;
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+
+  cursor: pointer;
+}
+.threshold_selection > .selection_box > .select_option_box .select_option:hover {
+  /* filter: brightness(0.8); */
+  background-color: #dfe1e5;
+}
+.threshold_selection > .selection_box:not(:hover) .select_option_box {
+  display: none;
 }
 </style>
