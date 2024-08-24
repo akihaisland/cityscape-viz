@@ -326,7 +326,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   })
 
   // 每个城市节点的接近中心性
-  const cities_sim_threshold = 0.01
+  const cities_sim_threshold = ref(0.04)
   const city_closeness_centrality = computed(() => {
     const res = [] as number[]
     const city_num = normalized_cities_conf_matrix.value.length
@@ -344,7 +344,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
         if (i == j) continue
         if (
           normalized_cities_conf_matrix.value[i][j] + normalized_cities_conf_matrix.value[j][i] >
-          2 * cities_sim_threshold
+          2 * cities_sim_threshold.value
         )
           tmp += 1
       }

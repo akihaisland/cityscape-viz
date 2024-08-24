@@ -91,11 +91,12 @@ const hover_node_tooltip_pos = computed(() => {
   return { x: -1, y: -1, tooltip: '' }
 })
 function handle_hover_node(e: MouseEvent, city_idx: number) {
-  if (node_hover_timer) clearTimeout(node_hover_timer)
-  node_hover_timer = setTimeout(() => {
-    now_hover_node.value = city_idx
-    now_hover_pos = [e.clientX, e.clientY]
-  }, 200)
+  return
+  // if (node_hover_timer) clearTimeout(node_hover_timer)
+  // node_hover_timer = setTimeout(() => {
+  //   now_hover_node.value = city_idx
+  //   now_hover_pos = [e.clientX, e.clientY]
+  // }, 200)
 }
 function handle_node_out() {
   if (node_hover_timer) clearTimeout(node_hover_timer)

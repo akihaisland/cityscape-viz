@@ -343,6 +343,11 @@ watch(
 // Create the horizontal and vertical scales.
 onMounted(async () => {
   await cityPicFeatsData.init_all_feats()
+  const scatter_box_ele = document.getElementById('scatter_outer_box') as HTMLElement
+  const box_rect = scatter_box_ele.getBoundingClientRect()
+  let new_zoom_rate = box_rect.height / 200
+  if (box_rect.width / 200 > new_zoom_rate) new_zoom_rate = box_rect.width / 200
+  zoom_rate.value = new_zoom_rate * 100
 })
 
 // 返回视图主页面
