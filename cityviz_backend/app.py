@@ -105,7 +105,7 @@ def req_data_labels():
     Arab = ['Istanbul', 'Dubai']
 
     culture_group = [Germanic_Europe, Latin_America, Confucian_Asia, Anglo, Sub_Sahara_Africa, Southern_Asia, Latin_Europe, Eastern_Europe, Nordic_Europe, Arab]
-    culture_group_labels = ['Germanic_Europe', 'Latin_America', 'Confucian_Asia', 'Anglo', 'Sub_Sahara_Africa', 'Southern_Asia', 'Latin_Europe', 'Eastern_Europe', 'Nordic_Europe', 'Arab']
+    culture_group_labels = ['Germanic Europe', 'Latin America', 'Confucian_Asia', 'Anglo', 'Sub Sahara Africa', 'Southern Asia', 'Latin Europe', 'Eastern Europe', 'Nordic Europe', 'Arab']
     culture_group_cities_idx = []
     city_idx2culture_group = [-1]*len(complete_city_list)
     for i in range(len(culture_group)):
@@ -213,12 +213,71 @@ def req_data_colors():
         "cul_groups_colors": ordered_cul_groups_colors
     })
 
-# @app.route('/api/cities')
-# def req_street_scale_data():
-#     vec_len = request.args.get("vec_len", 3000, int)
-#     res = np.genfromtxt("./data/test_labels.txt")[:vec_len, 0].tolist()
-#     return jsonify(res)
+@app.route('/api/building_color')
+def req_building_color_data():
+    vec_len = request.args.get("vec_len", 3000, int)
+    res = np.genfromtxt("./data/test_feat4_sum.txt")[get_random_sample(vec_len)]
+    
+    labels = np.genfromtxt("./data/test_preds.txt", dtype=int, delimiter=",")[get_random_sample(vec_len), 1]
+    cities_num = np.max(labels)+1
+    stat = np.zeros([cities_num, res.shape[1]])
+    for i in range(cities_num):
+        stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
 
+    attr_names = []
+    for i in range(res.shape[1]):
+        attr_names.append(f"bin{i*256}-bin{(i+1)*256}")
+
+    return jsonify({"data": stat.tolist(), "tags": attr_names})
+
+@app.route('/api/urban_sign')
+def req_urban_sign_data():
+    vec_len = request.args.get("vec_len", 3000, int)
+    res = np.genfromtxt("./data/test_feat3_filtered.txt")[get_random_sample(vec_len)]
+    
+    labels = np.genfromtxt("./data/test_preds.txt", dtype=int, delimiter=",")[get_random_sample(vec_len), 1]
+    cities_num = np.max(labels)+1
+    stat = np.zeros([cities_num, res.shape[1]])
+    for i in range(cities_num):
+        stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
+
+
+    attr_names = ['Plaque', 'Engrave_wall', 'Poster', 'Stand_alone', 'Hanging', 'Banner_pixel']
+    return jsonify({"data": stat.tolist(), "tags": attr_names})
+
+@app.route('/api/facade_material')
+def req_facade_material_data():
+    vec_len = request.args.get("vec_len", 3000, int)
+    res = np.genfromtxt("./data/test_feat1.txt")[get_random_sample(vec_len)]
+    
+    labels = np.genfromtxt("./data/test_preds.txt", dtype=int, delimiter=",")[get_random_sample(vec_len), 1]
+    cities_num = np.max(labels)+1
+    stat = np.zeros([cities_num, res.shape[1]])
+    for i in range(cities_num):
+        stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
+
+    attr_names = ['B', 'C', 'G', 'M', 'O', 'P', 'S', 'W']
+    return jsonify({"data": stat.tolist(), "tags": attr_names})
+
+@app.route('/api/architectural_style')
+def req_architectural_style_data():
+    vec_len = request.args.get("vec_len", 3000, int)
+    res = np.genfromtxt("./data/test_feat2.txt")[get_random_sample(vec_len)]
+    
+    labels = np.genfromtxt("./data/test_preds.txt", dtype=int, delimiter=",")[get_random_sample(vec_len), 1]
+    cities_num = np.max(labels)+1
+    stat = np.zeros([cities_num, res.shape[1]])
+    for i in range(cities_num):
+        stat[i, :] = np.sum((res.T*(labels==i)).T, axis=0) / np.sum(labels==i)
+
+    attr_names = ['Art_Deco', 'Brutalism', 'Eastern_Asian_Regional', 'Eastern_European_Regional', 'Georgian', 'Greystone', 'High-tech', \
+                'International', 'Middle_Eastern_Regional',
+                'Modern_high-rise_Apartment', 'Neoclassical', 'Nordic_Regional',
+                'Postmodern', 'Ranch-style', 'Scandinavian_Vernacular',
+                'Southeast_Asian_Regional', 'Southern_Asian_Regional',
+                'Southern_European_Regional', 'Tube-shaped_Apartment', 'Victorian',
+                'Western_European_Vernacular', 'Worker_Cottage']
+    return jsonify({"data": stat.tolist(), "tags": attr_names})
 
 # @app.route('/api/streetScale')
 # def req_street_scale_data():

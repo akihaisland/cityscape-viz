@@ -9,18 +9,22 @@ interface HslaColor {
   a: number
 }
 
-// const backend_url = 'http://10.7.168.50:5050'
-const backend_url = 'http://47.120.10.244:5050/'
+const backend_url = 'http://10.7.168.50:5050'
+// const backend_url = 'http://47.120.10.244:5050/'
 
 export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // tsne降维后的坐标以及各种信息
   const tsne_pos = ref([] as number[][])
   const street_scales = ref([] as number[])
-  const building_colors = ref([] as number[])
-  const facade_material = ref([] as number[])
-  const architectural_style = ref([] as number[])
+  const building_color_attrs = ref([] as string[])
+  const facade_material_attrs = ref([] as string[])
+  const architectural_style_attrs = ref([] as string[])
+  const urban_sign_attrs = ref([] as string[])
+  const building_colors = ref([] as number[][])
+  const facade_material = ref([] as number[][])
+  const architectural_style = ref([] as number[][])
   const greenery = ref([] as number[])
-  const urban_sign = ref([] as number[])
+  const urban_sign = ref([] as number[][])
   const idx2city_idxs = ref([] as number[])
   const idx2culture_group_idxs = ref([] as number[])
   const cities_names = ref([] as string[])
@@ -62,7 +66,33 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     })) as { data: number[] }
     greenery.value = req_greenery_res.data
 
-    // data missing
+    // 请求color的数据
+    const req_building_color_res = (await axios.get(backend_url + '/api/building_color', {
+      params: { vec_len: test_num }
+    })) as { data: { data: number[][]; tags: string[] } }
+    building_colors.value = req_building_color_res.data.data
+    building_color_attrs.value = req_building_color_res.data.tags
+
+    // 请求urban sign的数据
+    const req_urban_sign_res = (await axios.get(backend_url + '/api/urban_sign', {
+      params: { vec_len: test_num }
+    })) as { data: { data: number[][]; tags: string[] } }
+    urban_sign.value = req_urban_sign_res.data.data
+    urban_sign_attrs.value = req_urban_sign_res.data.tags
+
+    // 请求facade_material的数据
+    const req_facade_material_res = (await axios.get(backend_url + '/api/facade_material', {
+      params: { vec_len: test_num }
+    })) as { data: { data: number[][]; tags: string[] } }
+    facade_material.value = req_facade_material_res.data.data
+    facade_material_attrs.value = req_facade_material_res.data.tags
+
+    // 请求architectural_style的数据
+    const req_architectural_style_res = (await axios.get(backend_url + '/api/architectural_style', {
+      params: { vec_len: test_num }
+    })) as { data: { data: number[][]; tags: string[] } }
+    architectural_style.value = req_architectural_style_res.data.data
+    architectural_style_attrs.value = req_architectural_style_res.data.tags
 
     // 请求城市的数据
     const req_in_cities_res = (await axios.get(backend_url + '/api/data_cities', {
@@ -224,7 +254,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
         node_y =
           (now_pos[1] - tsne_range.value[1][0]) / (tsne_range.value[1][1] - tsne_range.value[1][0])
       }
-      nodes.push([node_x, node_y])
+      nodes.push([node_x, 1 - node_y])
     })
     return nodes
   })
@@ -280,16 +310,29 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   })
 
   // 每个城市节点的接近中心性
+  const cities_sim_threshold = 0.04
   const city_closeness_centrality = computed(() => {
     const res = [] as number[]
     const city_num = normalized_cities_conf_matrix.value.length
+    // for (let i = 0; i < city_num; i += 1) {
+    //   let tmp = 0
+    //   for (let j = 0; j < city_num; j += 1) {
+    //     if (i == j) continue
+    //     tmp += normalized_cities_conf_matrix.value[i][j] + normalized_cities_conf_matrix.value[j][i]
+    //   }
+    //   res.push(tmp / (2 * city_num - 2))
+    // }
     for (let i = 0; i < city_num; i += 1) {
       let tmp = 0
       for (let j = 0; j < city_num; j += 1) {
         if (i == j) continue
-        tmp += normalized_cities_conf_matrix.value[i][j] + normalized_cities_conf_matrix.value[j][i]
+        if (
+          normalized_cities_conf_matrix.value[i][j] + normalized_cities_conf_matrix.value[j][i] >
+          2 * cities_sim_threshold
+        )
+          tmp += 1
       }
-      res.push(tmp / (2 * city_num - 2))
+      res.push(tmp)
     }
     return res
   })
@@ -310,6 +353,10 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   return {
     tsne_pos,
     street_scales,
+    building_color_attrs,
+    facade_material_attrs,
+    architectural_style_attrs,
+    urban_sign_attrs,
     building_colors,
     facade_material,
     architectural_style,
@@ -325,6 +372,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     sel_show_nodes,
     cul_group_status,
     init_all_feats,
+    tsne_range,
     std_tsne_pts,
     cities_colors,
     culture_groups_colors,
@@ -337,6 +385,7 @@ export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
     city_closeness_centrality,
     cities2cul_group_idx,
     cities_tsne_pos,
-    main_sel_show_view
+    main_sel_show_view,
+    cities_sim_threshold
   }
 })

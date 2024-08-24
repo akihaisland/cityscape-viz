@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import * as d3 from 'd3'
+import '@/assets/tooltip.css'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useCityPicFeatStore } from '@/stores/cityPicFeat'
+import { tooltip } from 'leaflet'
 const cityPicFeatsData = useCityPicFeatStore()
+const if_reverse_y = -1 // -1代表从下向上y增大
 
 function hsl_color_obj2str(color_obj: { h: number; s: number; l: number; a: number }) {
   if (color_obj == undefined) return `hsla(180, 100%, 100%, 0)`
@@ -120,7 +123,54 @@ function start_move(e: MouseEvent) {
   document.addEventListener('mouseup', handleMoveEnd)
 }
 
+// d3 culture group 中心点
 const cul_groups_center = ref([] as { pos: number[]; color: string }[])
+// 展示数据
+const now_hover_cul_group = ref(-1)
+let now_hover_cul_group_show_idx = ref(-1)
+let now_hover_pos = [-1, -1]
+let cul_group_hover_timer = -1
+function svg_node2raw(svg_node_pos: number[]) {
+  const res = [] as number[]
+  for (let i = 0; i < 2; i += 1) {
+    const raw_range = cityPicFeatsData.tsne_range[i][1] - cityPicFeatsData.tsne_range[i][0]
+    let raw_val = ((svg_node_pos[0] - 100) / 200) * raw_range + cityPicFeatsData.tsne_range[i][0]
+    if (i == 1)
+      raw_val = (1 - (svg_node_pos[0] - 100) / 200) * raw_range + cityPicFeatsData.tsne_range[i][0]
+    res.push(raw_val)
+  }
+  return res
+}
+const hover_cul_group_tooltip_pos = computed(() => {
+  if (now_hover_cul_group.value >= 0) {
+    const father_ele = document.getElementById('scatter_outer_box') as HTMLElement
+    const father_pos_rect = father_ele.getBoundingClientRect()
+    let tooltip_content = `Culture Group: ${cityPicFeatsData.culture_groups_names[now_hover_cul_group.value]}\n`
+    if (now_hover_cul_group_show_idx.value != -1) {
+      const center_pt = cul_groups_center.value[now_hover_cul_group_show_idx.value].pos
+      const raw_center = svg_node2raw(center_pt)
+      tooltip_content += `Center: ${raw_center[0].toFixed(5)}, ${raw_center[1].toFixed(5)}`
+    }
+    return {
+      x: now_hover_pos[0] - father_pos_rect.left,
+      y: now_hover_pos[1] - father_pos_rect.top,
+      tooltip: tooltip_content
+    }
+  }
+  return { x: -1, y: -1, tooltip: '' }
+})
+function handle_hover_cul_group(e: MouseEvent, cul_group_idx: number) {
+  if (cul_group_hover_timer) clearTimeout(cul_group_hover_timer)
+  cul_group_hover_timer = setTimeout(() => {
+    now_hover_cul_group.value = cul_group_idx
+    now_hover_pos = [e.clientX, e.clientY]
+  }, 200)
+}
+function handle_cul_group_out() {
+  if (cul_group_hover_timer) clearTimeout(cul_group_hover_timer)
+  now_hover_cul_group.value = -1
+}
+// 画出中心点
 function draw_scatter_KDE() {
   const svg = d3.select('#embeddings_bg_board')
   svg.selectAll('*').remove()
@@ -128,7 +178,7 @@ function draw_scatter_KDE() {
   if (cityPicFeatsData.now_show_status == 0) return
 
   // 根据模式修改透明度
-  const tmp_cul_groups_center = [] as { pos: number[]; color: string }[]
+  const tmp_cul_groups_center = [] as { pos: number[]; color: string; cul_idx: number }[]
   let layer_opacity = 0.08
   if (cityPicFeatsData.cul_group_status == 1) layer_opacity = 0.2
   cityPicFeatsData.cul_group2data_idx.forEach((cul_group_datas_idx, cul_idx) => {
@@ -165,7 +215,8 @@ function draw_scatter_KDE() {
         pos: cul_group_mid,
         // color: hsl_color_obj2str(cul_group_color_obj)
         // color: hsla_color2rgba_str(cul_group_color_obj)
-        color: hsla_color2hex_str(cul_group_color_obj)
+        color: hsla_color2hex_str(cul_group_color_obj),
+        cul_idx: cul_idx
       })
 
       // 修改颜色
@@ -192,9 +243,33 @@ function draw_scatter_KDE() {
       })
       .attr('stroke-width', 1)
       .attr('d', d3.geoPath())
+      .on('mouseenter', (e) => {
+        if (cityPicFeatsData.cul_group_status == 1) {
+          now_hover_cul_group_show_idx.value = tmp_cul_groups_center.length - 1
+        }
+        handle_hover_cul_group(e as MouseEvent, cul_idx)
+      })
+      .on('mouseout', () => {
+        handle_cul_group_out()
+      })
+
     // console.log('kde_data', densityProgress)
   })
   // 保存质心坐标
+  // 判断是否要画上质心
+  if (cityPicFeatsData.cul_group_status == 1) {
+    svg
+      .append('g')
+      .selectAll()
+      .data(tmp_cul_groups_center)
+      .join('circle')
+      .attr('stroke', '#fff')
+      .attr('stroke-width', 0.6)
+      .attr('r', 2.5)
+      .attr('cx', (d) => d.pos[0])
+      .attr('cy', (d) => d.pos[1])
+      .attr('fill', (d) => d.color)
+  }
   cul_groups_center.value = tmp_cul_groups_center
 }
 // const cul_groups_centers = computed(() => {
@@ -220,18 +295,26 @@ function draw_scatter_KDE() {
 // })
 
 const nodes2show = computed(() => {
-  const res = [] as { x: number; y: number; color: string; data_idx: number }[]
+  const res = [] as { x: number; y: number; color: string; data_idx: number; tooltip: string }[]
   cityPicFeatsData.std_tsne_pts.forEach((std_tsne_pt, data_idx) => {
     const city_idx = cityPicFeatsData.idx2city_idxs[data_idx]
     const cul_idx = cityPicFeatsData.cities2cul_group_idx[city_idx]
     if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[city_idx]) return
     if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
       return
+
+    let tooltip_content = `City: ${cityPicFeatsData.cities_names[city_idx]}\n`
+    if (cityPicFeatsData.now_show_status == 1)
+      tooltip_content = `Culture Group: ${cityPicFeatsData.culture_groups_names[cul_idx]}\n`
+    tooltip_content +=
+      `t-SNE-2D-1: ${cityPicFeatsData.tsne_pos[data_idx][0].toFixed(5)}\n` +
+      `t-SNE-2D-2: ${cityPicFeatsData.tsne_pos[data_idx][1].toFixed(5)}`
     res.push({
       x: std_tsne_pt[0],
       y: std_tsne_pt[1],
       color: show_node_color(data_idx).node_color,
-      data_idx: data_idx
+      data_idx: data_idx,
+      tooltip: tooltip_content
     })
   })
   return res
@@ -300,7 +383,7 @@ function download_now_view() {
     // 文化圈数据
     svgData += nodes_bg_layer.innerHTML
     if (cityPicFeatsData.cul_group_status == 1) {
-      svgData += cul_groups_mids_layer.innerHTML
+      // svgData += cul_groups_mids_layer.innerHTML
     } else {
       svgData += nodes_layer.innerHTML
     }
@@ -316,6 +399,35 @@ function download_now_view() {
   a.click()
   // window.open(url, '_blank')
   URL.revokeObjectURL(url)
+}
+
+// 展示数据
+const node_r = 0.5
+const now_hover_node = ref(-1)
+let node_hover_timer = -1
+const hover_node_tooltip_pos = computed(() => {
+  if (now_hover_node.value >= 0) {
+    const node_obj = nodes2show.value[now_hover_node.value]
+    const father_ele = document.getElementById('scatter_outer_box') as HTMLElement
+    const father_pos_rect = father_ele.getBoundingClientRect()
+    return {
+      x: now_hover_pos[0] - father_pos_rect.left,
+      y: now_hover_pos[1] - father_pos_rect.top,
+      tooltip: node_obj.tooltip
+    }
+  }
+  return { x: -1, y: -1, tooltip: '' }
+})
+function handle_hover_node(e: MouseEvent, data_show_idx: number) {
+  if (node_hover_timer) clearTimeout(node_hover_timer)
+  node_hover_timer = setTimeout(() => {
+    now_hover_node.value = data_show_idx
+    now_hover_pos = [e.clientX, e.clientY]
+  }, 200)
+}
+function handle_node_out() {
+  if (node_hover_timer) clearTimeout(node_hover_timer)
+  now_hover_node.value = -1
 }
 </script>
 
@@ -517,7 +629,7 @@ function download_now_view() {
             viewBox="0 0 400 400"
             id="embeddings_bg_board"
           ></svg>
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" id="embeddings_mids_board">
+          <!-- <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" id="embeddings_mids_board">
             <circle
               v-for="(node_pos, node_idx) in cul_groups_center"
               :key="node_idx"
@@ -528,7 +640,7 @@ function download_now_view() {
               stroke-width="0.6"
               r="2.5"
             />
-          </svg>
+          </svg> -->
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 400 400"
@@ -543,12 +655,42 @@ function download_now_view() {
               :cx="100 + node_pos_obj.x * 200"
               :cy="100 + node_pos_obj.y * 200"
               :fill="node_pos_obj.color"
-              r="0.5"
+              :id="`embedding_overview_node_s${node_pos_obj.data_idx}`"
+              :r="node_r"
+              @mouseenter="handle_hover_node($event, node_idx)"
+              @mouseleave="handle_node_out"
             />
           </svg>
           <!-- cul_groups_center -->
         </div>
       </div>
+      <div
+        class="node_tooltip_assist"
+        v-show="now_hover_node >= 0"
+        :tooltip="hover_node_tooltip_pos.tooltip"
+        :style="{
+          position: 'absolute',
+          left: hover_node_tooltip_pos.x + 'px',
+          top: hover_node_tooltip_pos.y + 'px',
+          width: '0px',
+          height: '0px',
+          borderRadius: '50%'
+        }"
+      ></div>
+      <div
+        class="culgroup_tooltip_assist"
+        v-show="now_hover_cul_group >= 0"
+        :tooltip="hover_cul_group_tooltip_pos.tooltip"
+        :style="{
+          position: 'absolute',
+          left: hover_cul_group_tooltip_pos.x + 'px',
+          top: hover_cul_group_tooltip_pos.y + 'px',
+          width: '0px',
+          height: '0px',
+          borderRadius: '50%'
+        }"
+      ></div>
+      <!-- @mouseout="handle_node_out" -->
     </div>
   </div>
 </template>
@@ -637,5 +779,20 @@ function download_now_view() {
   height: 100%;
   position: absolute;
   /* background-color: hsla(hue, saturation, lightness, alpha); */
+}
+
+/* 展示节点信息 */
+.node_tooltip_assist::after {
+  width: 120px;
+}
+.node_tooltip_assist::after,
+.node_tooltip_assist::before,
+.culgroup_tooltip_assist::after,
+.culgroup_tooltip_assist::before {
+  display: block;
+}
+
+.culgroup_tooltip_assist::after {
+  width: 130px;
 }
 </style>

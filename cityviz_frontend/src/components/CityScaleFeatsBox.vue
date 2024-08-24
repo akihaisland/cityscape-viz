@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { useCityPicFeatStore } from '@/stores/cityPicFeat'
 import HistgramChartSvg from './HistgramChartSvg.vue'
+import BarChartSvg from './BarChartSvg.vue'
 import { computed, ref, watch } from 'vue'
 
 const cityPicFeatsData = useCityPicFeatStore()
-const feats_show = ref([true, false, false, false, true, false])
+// const feats_show = ref([true, false, false, false, true, false])
+const feats_show = ref([true, true, true, true, true, true])
 const city_item_if_show = computed(() => {
   for (let i = 0; i < feats_show.value.length; i += 1) {
     if (feats_show.value[i]) return true
@@ -25,6 +27,38 @@ function get_city_feat_data(city_idx: number, feat_idx: number) {
       else return [] as number[]
     }
   } else return [] as number[]
+}
+function get_city_feat_data2(city_idx: number, feat_idx: number) {
+  if (feats_show.value[feat_idx]) {
+    if (feat_idx == 1) {
+      if (cityPicFeatsData.building_colors == undefined)
+        return { data: [] as number[], tags: [] as string[] }
+      const res = cityPicFeatsData.building_colors[city_idx]
+      const tags = cityPicFeatsData.building_color_attrs
+
+      if (res != undefined && tags != undefined) return { data: res, tags: tags }
+    } else if (feat_idx == 2) {
+      if (cityPicFeatsData.facade_material == undefined)
+        return { data: [] as number[], tags: [] as string[] }
+      const res = cityPicFeatsData.facade_material[city_idx]
+      const tags = cityPicFeatsData.facade_material_attrs
+      if (res != undefined && tags != undefined) return { data: res, tags: tags }
+    } else if (feat_idx == 3) {
+      if (cityPicFeatsData.architectural_style == undefined)
+        return { data: [] as number[], tags: [] as string[] }
+      const res = cityPicFeatsData.architectural_style[city_idx]
+      const tags = cityPicFeatsData.architectural_style_attrs
+      if (res != undefined && tags != undefined) return { data: res, tags: tags }
+    } else if (feat_idx == 5) {
+      if (cityPicFeatsData.urban_sign == undefined)
+        return { data: [] as number[], tags: [] as string[] }
+      const res = cityPicFeatsData.urban_sign[city_idx]
+      const tags = cityPicFeatsData.urban_sign_attrs
+      if (res != undefined && tags != undefined) return { data: res, tags: tags }
+    }
+  }
+
+  return { data: [] as number[], tags: [] as string[] }
 }
 
 const filter_show_items_name = [
@@ -92,18 +126,6 @@ function switch_filter_all() {
 // })
 // 过滤结果
 const city_search_content = ref('')
-// const filter_show_res = computed(() => {
-//   const res = [] as { name: string; city_idx: number }[]
-//   cityPicFeatsData.cities_names.forEach((city_name, city_idx) => {
-//     if (city_name.includes(city_search_content.value)) {
-//       res.push({
-//         name: cityPicFeatsData.cities_names[city_idx],
-//         city_idx: city_idx
-//       })
-//     }
-//   })
-//   return res
-// })
 
 const filter_show_res = computed(() => {
   const res = [] as { name: string; city_idx: number }[]
@@ -160,7 +182,7 @@ function switch_city_show_status(city_idx: number) {
           fill="#1A2134"
         />
       </svg>
-      <span class="title_content"> Geographic network visualization </span>
+      <span class="title_content"> Cityscape Features </span>
       <div class="city_filter_box">
         <span class="filter_title"> Cities </span>
 
@@ -287,6 +309,7 @@ function switch_city_show_status(city_idx: number) {
         v-for="(city_obj, city_show_idx) in filter_show_res"
         :key="city_show_idx"
       >
+        <!-- v-for="(city_obj, city_show_idx) in filter_show_res" -->
         <div class="city_feats_item_title">{{ city_obj.name }}</div>
         <div class="city_feats_item_hists">
           <div class="hist_graph_box" v-show="feats_show[0]">
@@ -295,10 +318,39 @@ function switch_city_show_status(city_idx: number) {
               :graph_title="'Street Scale'"
             />
           </div>
+          <!-- BarChartSvg -->
+          <div class="hist_graph_box" v-show="feats_show[1]">
+            <BarChartSvg
+              :show_data="get_city_feat_data2(city_obj.city_idx, 1).data"
+              :graph_title="'Building Colors'"
+              :bars_tag="get_city_feat_data2(city_obj.city_idx, 1).tags"
+            />
+          </div>
+          <div class="hist_graph_box" v-show="feats_show[2]">
+            <BarChartSvg
+              :show_data="get_city_feat_data2(city_obj.city_idx, 2).data"
+              :graph_title="'Facade Material'"
+              :bars_tag="get_city_feat_data2(city_obj.city_idx, 2).tags"
+            />
+          </div>
+          <div class="hist_graph_box" v-show="feats_show[3]">
+            <BarChartSvg
+              :show_data="get_city_feat_data2(city_obj.city_idx, 3).data"
+              :graph_title="'Architechtural Style'"
+              :bars_tag="get_city_feat_data2(city_obj.city_idx, 3).tags"
+            />
+          </div>
           <div class="hist_graph_box" v-show="feats_show[4]">
             <HistgramChartSvg
               :show_data="get_city_feat_data(city_obj.city_idx, 4)"
               :graph_title="'Greenery'"
+            />
+          </div>
+          <div class="hist_graph_box" v-show="feats_show[5]">
+            <BarChartSvg
+              :show_data="get_city_feat_data2(city_obj.city_idx, 5).data"
+              :graph_title="'Urban Sign'"
+              :bars_tag="get_city_feat_data2(city_obj.city_idx, 5).tags"
             />
           </div>
           <!-- <div class="hist_graph_box">
@@ -324,7 +376,8 @@ function switch_city_show_status(city_idx: number) {
   width: calc(100% - 16px * 2);
   height: 36px;
   padding: 0 16px;
-  padding-bottom: 8px;
+  /* padding-bottom: 8px; */
+  padding-bottom: 2px;
 
   display: flex;
   flex-direction: row;
@@ -439,7 +492,8 @@ function switch_city_show_status(city_idx: number) {
 
 .city_scale_feats_res_box {
   width: 100%;
-  height: calc(100% - 81px - 44px);
+  /* height: calc(100% - 81px - 44px); */
+  height: calc(100% - 81px - 44px + 6px);
   border-radius: 4px;
 
   /* background-color: azure; */

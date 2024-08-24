@@ -98,10 +98,18 @@ const x_axis_data = computed(() => {
   const per_bar_w = x_axis_len / (bar_num + 1)
   let now_pos = 30 + per_bar_w / 2
   const bars_pos = [now_pos]
+  // const bars_pos = [] as number[]
   for (let i = 0; i < bar_num; i += 1) {
     now_pos += per_bar_w
     bars_pos.push(now_pos)
   }
+  now_pos = 30 + per_bar_w / 2
+  const bars_pos2 = [] as number[]
+  for (let i = 0; i < bar_num * 5; i += 1) {
+    bars_pos2.push(now_pos)
+    now_pos += per_bar_w / 5
+  }
+  // const bars_pos2 = bars_pos.slice(0, bars_pos.length - 1)
 
   const bars_bounds_title = [] as string[]
   for (let i = 0; i < bars_bounds.length; i += 5) {
@@ -112,7 +120,9 @@ const x_axis_data = computed(() => {
     end: svg_size.value.w - 16,
     bars_pos: bars_pos,
     bars_bounds_title: bars_bounds_title,
-    per_bar_w: per_bar_w
+    full_bars_bounds: bars_bounds,
+    per_bar_w: per_bar_w,
+    bars_pos2: bars_pos2
   }
 })
 const delta_y = computed(() => {
@@ -182,6 +192,38 @@ const histgram_bars_pos = computed(() => {
 
   return bars_path_pos
 })
+
+// 展示数据
+const now_hover_bar = ref(-1)
+let now_hover_timer = -1
+let now_hover_pos = [-1, -1]
+const hover_bar_tooltip_pos = computed(() => {
+  if (now_hover_bar.value >= 0) {
+    const now_tooltip =
+      `${num2format_str(x_axis_data.value.full_bars_bounds[now_hover_bar.value])}-` +
+      `${num2format_str(x_axis_data.value.full_bars_bounds[now_hover_bar.value + 1])}` +
+      `\nNum: ${bars_val.value[now_hover_bar.value]}`
+    return {
+      x: now_hover_pos[0],
+      y: now_hover_pos[1],
+      tooltip: now_tooltip
+    }
+  }
+  return { x: now_hover_pos[0], y: now_hover_pos[1], tooltip: '' }
+})
+function handle_hover_bar(e: MouseEvent, data_show_idx: number) {
+  if (now_hover_timer) clearTimeout(now_hover_timer)
+  now_hover_timer = setTimeout(() => {
+    now_hover_bar.value = data_show_idx
+    // console.log(e)
+
+    now_hover_pos = [e.offsetX, e.offsetY]
+  }, 200)
+}
+function handle_bar_out() {
+  if (now_hover_timer) clearTimeout(now_hover_timer)
+  now_hover_bar.value = -1
+}
 </script>
 
 <template>
@@ -276,6 +318,18 @@ const histgram_bars_pos = computed(() => {
         stroke="#000"
         stroke-width="1"
       />
+      <!-- 出货莫提示 -->
+      <rect
+        v-for="(bar_x_pos, bar_idx) in x_axis_data.bars_pos2"
+        :key="bar_idx"
+        :x="bar_x_pos"
+        :y="y_axis_data.end"
+        :width="x_axis_data.per_bar_w / 5"
+        :height="y_axis_data.start - y_axis_data.end"
+        fill="transparent"
+        @mouseenter="handle_hover_bar($event, bar_idx)"
+        @mouseout="handle_bar_out"
+      />
       <text
         v-for="(bar_y_pos, y_idx) in y_axis_data.bars_pos"
         :key="y_idx"
@@ -288,11 +342,25 @@ const histgram_bars_pos = computed(() => {
         {{ y_axis_data.bars_bounds_title[y_idx] }}
       </text>
     </svg>
+    <div
+      class="bar_tooltip_assist"
+      v-show="now_hover_bar >= 0"
+      :tooltip="hover_bar_tooltip_pos.tooltip"
+      :style="{
+        position: 'absolute',
+        left: hover_bar_tooltip_pos.x + 'px',
+        top: hover_bar_tooltip_pos.y + 'px',
+        width: '0px',
+        height: '0px',
+        borderRadius: '50%'
+      }"
+    ></div>
   </div>
 </template>
 
 <style scoped>
 .histgram_chart_box {
+  position: relative;
   width: 100%;
   height: 100%;
 }
@@ -302,5 +370,17 @@ const histgram_bars_pos = computed(() => {
 }
 .histgram_chart_box svg text {
   user-select: none;
+}
+
+/* 展示节点信息 */
+.bar_tooltip_assist {
+  position: absolute;
+}
+.bar_tooltip_assist::after {
+  width: 100px;
+}
+.bar_tooltip_assist::after,
+.bar_tooltip_assist::before {
+  display: block;
 }
 </style>

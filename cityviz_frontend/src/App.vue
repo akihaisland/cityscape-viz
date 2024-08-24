@@ -59,6 +59,10 @@ function set_show_view(target: number) {
         ALL
       </button>
     </div>
+    <!-- <div
+      class="tmp"
+      style="position: absolute; width: 100%; height: 1px; background-color: black; top: 56px"
+    ></div> -->
   </main>
 </template>
 
@@ -88,6 +92,9 @@ main .right_content {
   padding: 16px;
   width: 602px;
   height: calc(100% - 32px);
+
+  padding-top: 45px;
+  height: calc(100% - 50px - 16px);
 }
 main.full_show .left_content {
   width: calc(100% - 16px * 2);
@@ -100,13 +107,15 @@ main.full_show .right_content {
 }
 
 .left_content .embedding_view_box {
-  height: 567px;
+  /* height: 567px; */
+  height: 500px;
   width: 100%;
   padding-bottom: 16px;
 }
 .left_content .geo_network_view_box {
   width: 100%;
-  height: calc(100% - 567px - 16px);
+  /* height: calc(100% - 567px - 16px); */
+  height: calc(100% - 500px - 16px);
 }
 main.full_show .left_content:has(.embedding_view_box.full_show) .geo_network_view_box,
 main.full_show .left_content:has(.geo_network_view_box.full_show) .embedding_view_box {

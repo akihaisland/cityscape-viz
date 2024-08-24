@@ -103,17 +103,17 @@ function switch_filter_all() {
 <template>
   <div class="main_content">
     <div class="title_pos">
-      <div class="logo_box"></div>
-      <div class="title_content">CityViz</div>
+      <div class="logo_box" style="width: 100%">
+        <img src="/src/assets/logo.png" alt="" srcset="" width="100%" />
+      </div>
+      <!-- <div class="title_content">CityViz</div> -->
     </div>
     <div class="middle_content">
       <div class="data_analysis_box">
-        <div class="box_title">Data Analysis & Overview</div>
+        <div class="box_title">Intro</div>
         <div class="box_content">
-          Enbedding, Lengedn, Network, Cityscape and etc. <br /><br />
-          Enbedding, Lengedn, Network, Cityscape and etc. <br />
-          Enbedding, Lengedn, Network, Cityscape and etc. <br />
-          Enbedding, Lengedn, Network, Cityscape and etc.
+          This platform supports cross-cultural research on cityscapes. The data was collected from
+          5,750,000 street view images across 75 cities worldwide.
         </div>
       </div>
       <div class="view_sel_box">
@@ -330,7 +330,7 @@ function switch_filter_all() {
             </clipPath>
           </defs>
         </svg>
-        <span>Network Visualization</span>
+        <span>Network Overview</span>
       </div>
       <div class="box_content">
         <NetworkGraphBox />
@@ -343,11 +343,12 @@ function switch_filter_all() {
 .main_content {
   width: 100%;
   height: 100%;
-  background: #000;
+  background: rgb(27, 33, 52);
   position: relative;
 }
 .title_pos {
   padding: 24px 32px;
+  padding-bottom: 0px;
 
   display: flex;
   flex-direction: row;
@@ -356,10 +357,14 @@ function switch_filter_all() {
   /* align-content: center; */
 }
 .title_pos .logo_box {
-  width: 72px;
+  /* width: 72px; */
   height: 72px;
-  background-color: #d9d9d9;
+  /* background-color: #d9d9d9; */
   border-radius: 4px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .title_pos .title_content {
   padding: 0 10px;
@@ -383,7 +388,12 @@ function switch_filter_all() {
 .network_graph_box {
   padding: 15px 32px;
   width: calc(100% - 32px * 2);
-  height: 426px;
+  /* height: 426px; */
+  height: calc(100% - 520px);
+
+  position: absolute;
+  left: 0;
+  bottom: 0;
 }
 .network_graph_box .box_title svg {
   width: 16px;

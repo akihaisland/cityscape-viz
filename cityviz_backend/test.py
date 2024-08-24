@@ -195,4 +195,12 @@ def gen_rand_list():
     print("数据已保存到 output.csv 文件中.")
 
 
-convert_color2hsl()
+# convert_color2hsl()
+
+new_arr = np.array([[1,2],[3,4]])
+new_arr2 = np.array([1,2])
+print(np.sum((new_arr.T * (new_arr2==1)).T, axis=0))
+# print(new_arr2.T*new_arr)
+
+print(new_arr2 == 2)
+print(np.sum(new_arr == 2))

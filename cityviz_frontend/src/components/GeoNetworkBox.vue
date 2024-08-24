@@ -65,16 +65,93 @@ const cities_grad_color = computed(() => {
   return res
 })
 
+// tooltip展示城市数据
+const now_hover_node = ref(-1)
+let now_hover_pos = [-1, -1]
+let node_hover_timer = -1
+const hover_node_tooltip_pos = computed(() => {
+  if (now_hover_node.value >= 0) {
+    const father_ele = document.getElementById('geo_network_outer_box') as HTMLElement
+    const father_pos_rect = father_ele.getBoundingClientRect()
+    let tooltip_content =
+      `City: ${cityPicFeatsData.cities_names[now_hover_node.value]}\n` +
+      `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value]}`
+    if (cityPicFeatsData.now_show_status == 1) {
+      const now_cul = cityPicFeatsData.cities2cul_group_idx[now_hover_node.value]
+      tooltip_content =
+        `Culture Group: ${cityPicFeatsData.culture_groups_names[now_cul]}\n` +
+        `Degree Centrality: ${cityPicFeatsData.city_closeness_centrality[now_hover_node.value]}`
+    }
+    return {
+      x: now_hover_pos[0] - father_pos_rect.left,
+      y: now_hover_pos[1] - father_pos_rect.top,
+      tooltip: tooltip_content
+    }
+  }
+  return { x: -1, y: -1, tooltip: '' }
+})
+function handle_hover_node(e: MouseEvent, city_idx: number) {
+  if (node_hover_timer) clearTimeout(node_hover_timer)
+  node_hover_timer = setTimeout(() => {
+    now_hover_node.value = city_idx
+    now_hover_pos = [e.clientX, e.clientY]
+  }, 200)
+}
+function handle_node_out() {
+  if (node_hover_timer) clearTimeout(node_hover_timer)
+  now_hover_node.value = -1
+}
+// edge数据
+const now_hover_edge = ref([-1, -1])
+let edge_hover_timer = -1
+const hover_edge_tooltip_pos = computed(() => {
+  const c1 = now_hover_edge.value[0]
+  const c2 = now_hover_edge.value[1]
+  if (c1 >= 0 && c2 >= 0) {
+    const edge_sim =
+      (cityPicFeatsData.normalized_cities_conf_matrix[c1][c2] +
+        cityPicFeatsData.normalized_cities_conf_matrix[c2][c1]) /
+      2
+    const father_ele = document.getElementById('geo_network_outer_box') as HTMLElement
+    const father_pos_rect = father_ele.getBoundingClientRect()
+
+    const edge_tooltip =
+      `City: ${cityPicFeatsData.cities_names[c1]}, ${cityPicFeatsData.cities_names[c2]}\n` +
+      `Similarity: ${edge_sim.toFixed(5)}`
+    return {
+      x: now_hover_pos[0] - father_pos_rect.left,
+      y: now_hover_pos[1] - father_pos_rect.top,
+      tooltip: edge_tooltip
+    }
+  }
+  return { x: -1, y: -1, tooltip: '' }
+})
+function handle_hover_edge(e: MouseEvent, c1_idx: number, c2_idx: number) {
+  if (edge_hover_timer) clearTimeout(edge_hover_timer)
+  edge_hover_timer = setTimeout(() => {
+    now_hover_edge.value = [c1_idx, c2_idx]
+    now_hover_pos = [e.clientX, e.clientY]
+  }, 200)
+}
+function handle_edge_out() {
+  if (edge_hover_timer) clearTimeout(edge_hover_timer)
+  now_hover_edge.value = [-1, -1]
+}
+
 let svgOverlay: L.SVGOverlay
 let svg_edges_overlay: L.SVGOverlay
 let svg_cities_names_overlay: L.SVGOverlay
 let addded_svg_w = 400
 let added_svg_h = 400
 const edge_max_w = 5
-const node_max_radius = 2
-const cities_sim_threshold = 0.05
-const line_opacity = 0.7
+const edge_min_w = 0.2
+const node_max_radius = 1
+const node_min_radius = 0.5
+const cities_sim_threshold = cityPicFeatsData.cities_sim_threshold
+const node_opacity = 0.9
+const line_opacity = 0.5
 
+// 获取城市位置 并画出点与线
 function reset_cities_client_pos() {
   if (!if_map_loaded.value) return
 
@@ -103,20 +180,10 @@ function reset_cities_client_pos() {
     }
   }
 }
-function redraw_edges_by_svg() {
-  if (!if_map_loaded.value) return
-  if (svg_edges_overlay != undefined) map.removeLayer(svg_edges_overlay)
-
-  if (cities_x.value.length == 0 || cities_y.value.length == 0) {
-    reset_cities_client_pos()
-  }
-
-  const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-  svgElement.setAttribute('viewBox', `0 0 ${addded_svg_w} ${added_svg_h}`)
+function gen_geo_edges_svg_elements() {
   const cities_num = cities_x.value.length
-
   let inner_content = ''
+  const edges_show = [] as number[][]
   for (let c1_idx = 0; c1_idx < cities_num; c1_idx += 1) {
     for (let c2_idx = 0; c2_idx < cities_num; c2_idx += 1) {
       if (c1_idx <= c2_idx) continue
@@ -152,11 +219,32 @@ function redraw_edges_by_svg() {
         (cityPicFeatsData.normalized_cities_conf_matrix[c1_idx][c2_idx] +
           cityPicFeatsData.normalized_cities_conf_matrix[c2_idx][c1_idx]) /
         2
-      const now_edge_w = cities_sim * edge_max_w
-      if (cities_sim > cities_sim_threshold)
-        inner_content += `<path d="${now_path_d}" stroke="${stroke_color}" stroke-width="${now_edge_w}" fill="none" />`
+      const now_edge_w = cities_sim * (edge_max_w - edge_min_w) + edge_min_w
+      if (cities_sim > cities_sim_threshold) {
+        edges_show.push([c1_idx, c2_idx])
+        const edge_id = `geo_edge_n${c1_idx}_${c2_idx}`
+        inner_content += `<path d="${now_path_d}" stroke="${stroke_color}" stroke-width="${now_edge_w}" id=${edge_id} fill="none" />`
+      }
     }
   }
+  return {
+    inner_content: inner_content,
+    edges_show: edges_show
+  }
+}
+function redraw_edges_by_svg() {
+  if (!if_map_loaded.value) return
+  if (svg_edges_overlay != undefined) map.removeLayer(svg_edges_overlay)
+
+  if (cities_x.value.length == 0 || cities_y.value.length == 0) {
+    reset_cities_client_pos()
+  }
+
+  const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  svgElement.setAttribute('viewBox', `0 0 ${addded_svg_w} ${added_svg_h}`)
+
+  const inner_content = gen_geo_edges_svg_elements().inner_content
 
   svgElement.innerHTML = inner_content
   var latLngBounds = L.latLngBounds([
@@ -170,6 +258,29 @@ function redraw_edges_by_svg() {
     interactive: true
   }).addTo(map)
 }
+function gen_geo_nodes_svg_elements() {
+  const cities_show = [] as number[]
+  const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
+  let inner_content = ''
+  for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      continue
+    const now_node_radius =
+      ((node_max_radius - node_min_radius) * cityPicFeatsData.city_closeness_centrality[i]) /
+        max_r_val +
+      node_min_radius
+    const now_city_color = hsl_color_obj2str(cities_color_after_view.value[i])
+    const node_id = `geo_city_node_${i}`
+    inner_content += `<circle cx="${cities_x.value[i]}" cy="${cities_y.value[i]}" fill="${now_city_color}" r="${now_node_radius}" id=${node_id}></circle>`
+    cities_show.push(i)
+  }
+  return {
+    inner_content: inner_content,
+    cities_show: cities_show
+  }
+}
 function redraw_nodes_by_svg() {
   if (!if_map_loaded.value) return
   if (svgOverlay != undefined) map.removeLayer(svgOverlay)
@@ -180,18 +291,9 @@ function redraw_nodes_by_svg() {
   const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
   svgElement.setAttribute('viewBox', `0 0 ${addded_svg_w} ${added_svg_h}`)
-  const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
-  let inner_content = ''
-  for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
-    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
-    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
-    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
-      continue
-    const now_node_radius =
-      (node_max_radius * cityPicFeatsData.city_closeness_centrality[i]) / max_r_val
-    const now_city_color = hsl_color_obj2str(cities_color_after_view.value[i])
-    inner_content += `<circle cx="${cities_x.value[i]}" cy="${cities_y.value[i]}" fill="${now_city_color}" r="${now_node_radius}"></circle>`
-  }
+
+  const gen_svg_res = gen_geo_nodes_svg_elements()
+  const inner_content = gen_svg_res.inner_content
   svgElement.innerHTML = inner_content
   var latLngBounds = L.latLngBounds([
     [90, 180],
@@ -200,9 +302,34 @@ function redraw_nodes_by_svg() {
   // map.fitBounds(latLngBounds)
 
   svgOverlay = L.svgOverlay(svgElement, latLngBounds, {
-    opacity: 1,
+    opacity: node_opacity,
     interactive: true
   }).addTo(map)
+}
+function gen_geo_cities_names_elements() {
+  const cities_show = [] as number[]
+  let inner_content = ''
+  const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
+  for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
+    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
+    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
+    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
+      continue
+    cities_show.push(i)
+    const now_node_radius =
+      ((node_max_radius - node_min_radius) * cityPicFeatsData.city_closeness_centrality[i]) /
+        max_r_val +
+      node_min_radius
+    if (i != 27)
+      inner_content += `<text x="${cities_x.value[i]}" y="${cities_y.value[i] - now_node_radius}" font-size="0.7" fill="#fff" text-anchor="middle">${cityPicFeatsData.cities_names[i]}</text>`
+    else
+      inner_content += `<text x="${cities_x.value[i]}" y="${cities_y.value[i] + now_node_radius + 0.6}" font-size="0.7" fill="#fff" text-anchor="middle">${cityPicFeatsData.cities_names[i]}</text>`
+  }
+
+  return {
+    inner_content: inner_content,
+    cities_show: cities_show
+  }
 }
 function redraw_cities_names_by_svg() {
   if (!if_map_loaded.value) return
@@ -214,21 +341,9 @@ function redraw_cities_names_by_svg() {
   const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
   svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
   svgElement.setAttribute('viewBox', `0 0 ${addded_svg_w} ${added_svg_h}`)
-  let inner_content = ''
-  const max_r_val = Math.max(...cityPicFeatsData.city_closeness_centrality)
-  for (let i = 0; i < cityPicFeatsData.cities_pos.length; i += 1) {
-    if (cityPicFeatsData.now_show_status == 0 && !cityPicFeatsData.sel_show_cities[i]) continue
-    const cul_idx = cityPicFeatsData.cities2cul_group_idx[i]
-    if (cityPicFeatsData.now_show_status == 1 && !cityPicFeatsData.sel_show_culture_groups[cul_idx])
-      continue
-    const now_node_radius =
-      (node_max_radius * cityPicFeatsData.city_closeness_centrality[i]) / max_r_val
-    if (i != 27)
-      inner_content += `<text x="${cities_x.value[i]}" y="${cities_y.value[i] - now_node_radius}" font-size="0.7" fill="#fff" text-anchor="middle">${cityPicFeatsData.cities_names[i]}</text>`
-    else
-      inner_content += `<text x="${cities_x.value[i]}" y="${cities_y.value[i] + now_node_radius + 0.6}" font-size="0.7" fill="#fff" text-anchor="middle">${cityPicFeatsData.cities_names[i]}</text>`
-  }
 
+  const gen_svg_res = gen_geo_cities_names_elements()
+  const inner_content = gen_svg_res.inner_content
   svgElement.innerHTML = inner_content
   var latLngBounds = L.latLngBounds([
     [90, 180],
@@ -240,49 +355,107 @@ function redraw_cities_names_by_svg() {
     interactive: true
   }).addTo(map)
 }
+// 为边与节点添加监听器 展示信息
+function add_nodes_event_listener(cities_idx: number[]) {
+  cities_idx.forEach((city_idx) => {
+    const node_id = `geo_city_node_${city_idx}`
+    const city_ele = document.getElementById(node_id) as HTMLElement
+    city_ele.addEventListener('mouseenter', (e) => {
+      handle_hover_node(e, city_idx)
+    })
+    city_ele.addEventListener('mouseout', handle_node_out)
+  })
+}
+function add_edges_event_listener(edges: number[][]) {
+  edges.forEach((cities_in_edge) => {
+    const edge_id = `geo_edge_n${cities_in_edge[0]}_${cities_in_edge[1]}`
+    const edge_ele = document.getElementById(edge_id) as HTMLElement
+    edge_ele.addEventListener('mouseenter', (e) => {
+      handle_hover_edge(e, cities_in_edge[0], cities_in_edge[1])
+    })
+    edge_ele.addEventListener('mouseout', handle_edge_out)
+  })
+}
+// 整合上面的函数 将点 边 text画在一个svg内
+function redraw_all_by_svg() {
+  if (!if_map_loaded.value) return
+  if (svgOverlay != undefined) map.removeLayer(svgOverlay)
+
+  if (cities_x.value.length == 0 || cities_y.value.length == 0) {
+    reset_cities_client_pos()
+  }
+  const svgElement = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svgElement.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+  svgElement.setAttribute('viewBox', `0 0 ${addded_svg_w} ${added_svg_h}`)
+
+  const gen_edges_svg_res = gen_geo_edges_svg_elements()
+  const gen_nodes_svg_res = gen_geo_nodes_svg_elements()
+  const gen_nodes_names_svg_res = gen_geo_cities_names_elements()
+  const inner_content =
+    gen_edges_svg_res.inner_content +
+    gen_nodes_svg_res.inner_content +
+    gen_nodes_names_svg_res.inner_content
+  svgElement.innerHTML = inner_content
+  var latLngBounds = L.latLngBounds([
+    [90, 180],
+    [-90, -180]
+  ])
+
+  svgOverlay = L.svgOverlay(svgElement, latLngBounds, {
+    opacity: node_opacity,
+    interactive: true
+  }).addTo(map)
+  add_nodes_event_listener(gen_nodes_svg_res.cities_show)
+  add_edges_event_listener(gen_edges_svg_res.edges_show)
+}
 
 watch(
   () => cities_color_after_view.value,
   () => {
-    redraw_edges_by_svg()
-    redraw_nodes_by_svg()
-    redraw_cities_names_by_svg()
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
   },
   { deep: true }
 )
 watch(
   () => cityPicFeatsData.cities_pos,
   () => {
-    redraw_edges_by_svg()
-    redraw_nodes_by_svg()
-    redraw_cities_names_by_svg()
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
   },
   { deep: true }
 )
 watch(
   () => cityPicFeatsData.sel_show_cities,
   () => {
-    redraw_edges_by_svg()
-    redraw_nodes_by_svg()
-    redraw_cities_names_by_svg()
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
   },
   { deep: true }
 )
 watch(
   () => cityPicFeatsData.sel_show_culture_groups,
   () => {
-    redraw_edges_by_svg()
-    redraw_nodes_by_svg()
-    redraw_cities_names_by_svg()
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
   },
   { deep: true }
 )
 watch(
   () => cityPicFeatsData.now_show_status,
   () => {
-    redraw_edges_by_svg()
-    redraw_nodes_by_svg()
-    redraw_cities_names_by_svg()
+    // redraw_edges_by_svg()
+    // redraw_nodes_by_svg()
+    // redraw_cities_names_by_svg()
+    redraw_all_by_svg()
   },
   { deep: true }
 )
@@ -320,7 +493,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="geo_network_box">
+  <div class="geo_network_box" id="geo_network_outer_box">
     <div class="geo_network_box_title">
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -349,11 +522,29 @@ onMounted(() => {
           fill="#1A2134"
         />
       </svg>
-      <span class="title_content"> Geographic network visualization </span>
+      <span class="title_content"> Geographic Network </span>
     </div>
     <div class="geo_network_place">
       <div id="map"></div>
     </div>
+    <div
+      class="node_hover_assist_tooltip"
+      v-show="now_hover_node >= 0"
+      :tooltip="hover_node_tooltip_pos.tooltip"
+      :style="{
+        left: hover_node_tooltip_pos.x + 'px',
+        top: hover_node_tooltip_pos.y + 'px'
+      }"
+    ></div>
+    <div
+      class="edge_hover_assist_tooltip"
+      v-show="now_hover_edge[0] >= 0 && now_hover_edge[1] >= 0"
+      :tooltip="hover_edge_tooltip_pos.tooltip"
+      :style="{
+        left: hover_edge_tooltip_pos.x + 'px',
+        top: hover_edge_tooltip_pos.y + 'px'
+      }"
+    ></div>
   </div>
 </template>
 
@@ -362,6 +553,7 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   background: #fff;
+  position: relative;
 }
 
 .geo_network_box_title {
@@ -398,10 +590,33 @@ onMounted(() => {
 
   background-color: azure;
   overflow: hidden;
+  position: relative;
 }
 
 .geo_network_place #map {
   width: 100%;
   height: 100%;
+}
+
+/* 展示节点信息 */
+.node_hover_assist_tooltip,
+.edge_hover_assist_tooltip {
+  position: absolute;
+  width: 0;
+  height: 0;
+  z-index: 999;
+}
+.node_hover_assist_tooltip::after {
+  width: 100px;
+}
+.node_hover_assist_tooltip::after,
+.node_hover_assist_tooltip::before,
+.edge_hover_assist_tooltip::after,
+.edge_hover_assist_tooltip::before {
+  display: block;
+}
+/* edge信息 */
+.edge_hover_assist_tooltip::after {
+  width: 150px;
 }
 </style>
