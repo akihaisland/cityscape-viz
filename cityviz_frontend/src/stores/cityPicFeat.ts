@@ -9,8 +9,8 @@ interface HslaColor {
   a: number
 }
 
-const backend_url = 'http://10.7.168.50:5050'
-// const backend_url = 'http://47.120.10.244:5050/'
+// const backend_url = 'http://10.7.168.50:5050'
+const backend_url = 'http://47.120.10.244:5050/'
 
 export const useCityPicFeatStore = defineStore('cityPicFeat', () => {
   // tsne降维后的坐标以及各种信息

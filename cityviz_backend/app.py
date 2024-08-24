@@ -226,7 +226,7 @@ def req_building_color_data():
 
     attr_names = []
     for i in range(res.shape[1]):
-        attr_names.append(f"bin{i*256}-bin{(i+1)*256}")
+        attr_names.append(f"bin{i*256}-bin{(i+1)*256-1}")
 
     return jsonify({"data": stat.tolist(), "tags": attr_names})
 
