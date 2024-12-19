@@ -1,4 +1,8 @@
-# CityViz
+<!-- # CityViz -->
+# <img src="cityviz_frontend/src/assets/logo_black.png" alt="img" width="300px" />
+<!-- ![这是一张图片](cityviz_frontend/src/assets/logo_black.png) -->
+<!-- <img src="cityviz_frontend/src/assets/logo_black.png" alt="img" width="200px" /> -->
+
 This platform supports cross-cultural research on cityscapes. The data was collected from 5,750,000 street view images across 75 cities worldwide.
 
 ## Installation
