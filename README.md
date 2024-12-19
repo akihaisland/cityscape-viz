@@ -29,13 +29,7 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple
 ```
 
 ## Data
-- [ ] raw data
-- [x] Preprocessed [data](cityviz_backend\data) used to launch the system.
-
-### Source Data
-```
-to be upload
-```
+- [x] Preprocessed [data](cityviz_backend/data) used to launch the system.
 
 ### File Path
 <!-- You need to put `imdb_vis30k`, `imdb_Beagle` and `data2vis_imdb` in `/Frontend/src/assets/static/`. -->
