@@ -29,6 +29,7 @@ pip install -r requirements.txt -i https://pypi.douban.com/simple
 ```
 
 ## Data
+- [x] [Raw data](https://osf.io/znhcs/?view_only=b7bea46e894f402abcb7672ede288b39)
 - [x] Preprocessed [data](cityviz_backend/data) used to launch the system.
 
 ### File Path
