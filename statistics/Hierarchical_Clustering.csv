@@ -1,0 +1,76 @@
+Cities1,Cluster_2,Cluster_3,Cluster_4,Cluster_5,Cluster_6,Cluster_7,Cluster_8,Cluster_9,Cluster_10,Cities2,CulturalGroups
+Beijing,1,1,1,1,1,1,1,1,1,Seoul,Confucian Asia
+Chengdu,1,1,1,1,1,1,1,1,1,Tokyo,Confucian Asia
+Guangzhou,1,1,1,1,1,1,1,1,1,Chengdu,Confucian Asia
+Shanghai,1,1,1,1,1,1,1,1,1,Taipei,Confucian Asia
+Shenzhen,1,1,1,1,1,1,1,1,1,Tianjin,Confucian Asia
+Tianjin,1,1,1,1,1,1,1,1,1,Beijing,Confucian Asia
+Bangalore,2,2,2,2,2,2,2,2,2,Singapore,Confucian Asia
+Mumbai,2,2,2,2,2,2,2,2,2,Shanghai,Confucian Asia
+New Delhi,2,2,2,2,2,2,2,2,2,Guangzhou,Confucian Asia
+Bogota,2,3,3,3,3,3,3,3,3,Hong Kong,Confucian Asia
+Buenos Aires,2,3,3,3,3,3,3,3,3,Shenzhen,Confucian Asia
+Lima,2,3,3,3,3,3,3,3,3,Bangalore,Southern Asia
+Mexico City,2,3,3,3,3,3,3,3,3,Mumbai,Southern Asia
+Sao Paulo,2,3,3,3,3,3,3,3,3,Manila,Southern Asia
+Santiago,2,3,3,3,3,3,3,3,3,Jakarta,Southern Asia
+Bangkok,2,3,3,3,3,4,4,4,4,New Delhi,Southern Asia
+Hong Kong,2,3,3,3,3,4,4,4,4,Bangkok,Southern Asia
+Jakarta,2,3,3,3,3,4,4,4,4,Kuala Lumpur,Southern Asia
+Kuala Lumpur,2,3,3,3,3,4,4,4,4,Mexico City,Latin America
+Manila,2,3,3,3,3,4,4,4,4,Bogota,Latin America
+Singapore,2,3,3,3,3,4,4,4,4,Lima,Latin America
+Taipei,2,3,3,3,3,4,4,4,4,Buenos Aires,Latin America
+Amsterdam,2,3,4,4,4,5,5,5,5,Sao Paulo,Latin America
+Brussels,2,3,4,4,4,5,5,5,5,Santiago,Latin America
+Copenhagen,2,3,4,4,4,5,5,5,5,Copenhagen,Nordic Europe
+Dublin,2,3,4,4,4,5,5,5,5,Oslo,Nordic Europe
+Hamburg,2,3,4,4,4,5,5,5,5,Stockholm,Nordic Europe
+London,2,3,4,4,4,5,5,5,5,Vienna,Germanic Europe
+Oslo,2,3,4,4,4,5,5,5,5,Berlin,Germanic Europe
+Stockholm,2,3,4,4,4,5,5,5,5,Brussels,Germanic Europe
+Berlin,2,3,4,4,4,5,6,6,6,Zurich,Germanic Europe
+Bucharest,2,3,4,4,4,5,6,6,6,Amsterdam,Germanic Europe
+Budapest,2,3,4,4,4,5,6,6,6,Hamburg,Germanic Europe
+Frankfurt,2,3,4,4,4,5,6,6,6,Frankfurt,Germanic Europe
+Luxembourg,2,3,4,4,4,5,6,6,6,Luxembourg,Germanic Europe
+Moscow,2,3,4,4,4,5,6,6,6,Munich,Germanic Europe
+Munich,2,3,4,4,4,5,6,6,6,Tel Aviv,Latin Europe
+Paris,2,3,4,4,4,5,6,6,6,Geneva,Latin Europe
+Prague,2,3,4,4,4,5,6,6,6,Rome,Latin Europe
+Tokyo,2,3,4,4,4,5,6,6,6,Lisbon,Latin Europe
+Vienna,2,3,4,4,4,5,6,6,6,Barcelona,Latin Europe
+Warsaw,2,3,4,4,4,5,6,6,6,Paris,Latin Europe
+Barcelona,2,3,4,4,4,5,6,7,7,Milan,Latin Europe
+Madrid,2,3,4,4,4,5,6,7,7,Madrid,Latin Europe
+Milan,2,3,4,4,4,5,6,7,7,Athens,Eastern Europe
+Rome,2,3,4,4,4,5,6,7,7,Moscow,Eastern Europe
+Athens,2,3,4,4,4,5,6,7,8,Budapest,Eastern Europe
+Dubai,2,3,4,4,4,5,6,7,8,Prague,Eastern Europe
+Geneva,2,3,4,4,4,5,6,7,8,Bucharest,Eastern Europe
+Seoul,2,3,4,4,4,5,6,7,8,Warsaw,Eastern Europe
+Tel Aviv,2,3,4,4,4,5,6,7,8,Johannesburg,Anglo
+Zurich,2,3,4,4,4,5,6,7,8,London,Anglo
+Boston,2,3,4,5,5,6,7,8,9,Dublin,Anglo
+Chicago,2,3,4,5,5,6,7,8,9,Boston,Anglo
+Montreal,2,3,4,5,5,6,7,8,9,Toronto,Anglo
+New York,2,3,4,5,5,6,7,8,9,New York,Anglo
+Toronto,2,3,4,5,5,6,7,8,9,Atlanta,Anglo
+Washington,2,3,4,5,5,6,7,8,9,Chicago,Anglo
+Atlanta,2,3,4,5,6,7,8,9,10,San Francisco,Anglo
+Auckland,2,3,4,5,6,7,8,9,10,Montreal,Anglo
+Brisbane,2,3,4,5,6,7,8,9,10,Los Angeles,Anglo
+Dallas,2,3,4,5,6,7,8,9,10,Vancouver,Anglo
+Denver,2,3,4,5,6,7,8,9,10,Houston,Anglo
+Houston,2,3,4,5,6,7,8,9,10,Dallas,Anglo
+Istanbul,2,3,4,5,6,7,8,9,10,Denver,Anglo
+Johannesburg,2,3,4,5,6,7,8,9,10,Washington,Anglo
+Lisbon,2,3,4,5,6,7,8,9,10,Miami,Anglo
+Los Angeles,2,3,4,5,6,7,8,9,10,Auckland,Anglo
+Melbourne,2,3,4,5,6,7,8,9,10,Perth,Anglo
+Miami,2,3,4,5,6,7,8,9,10,Brisbane,Anglo
+Nairobi,2,3,4,5,6,7,8,9,10,Melbourne,Anglo
+Perth,2,3,4,5,6,7,8,9,10,Sydney,Anglo
+San Francisco,2,3,4,5,6,7,8,9,10,Dubai,Arab
+Sydney,2,3,4,5,6,7,8,9,10,Istanbul,Arab
+Vancouver,2,3,4,5,6,7,8,9,10,Nairobi,Sub-Sahara Africa
