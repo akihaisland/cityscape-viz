@@ -1,6 +1,6 @@
 <!-- # CityViz -->
 
-# `<img src="cityviz_frontend/src/assets/logo_black.png" alt="img" width="300px" />`
+# <img src="cityviz_frontend/src/assets/logo_black.png" alt="img" width="300px" />
 
 <!-- ![这是一张图片](cityviz_frontend/src/assets/logo_black.png) -->
 
