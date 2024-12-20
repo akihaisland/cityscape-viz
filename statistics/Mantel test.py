@@ -23,6 +23,7 @@ def mantel_test(matrix1, matrix2, perms=10000):
 
 cityscapes_path = r"E:/NC/0729/mantel_test/MATRIX_cityscapes.csv"
 cultural_groups_path = r"E:/NC/0729/mantel_test/MATRIX_cultural_groups.csv"
+# cultural_groups_path = r"E:/NC/0729/mantel_test/MATRIX_continents.csv"
 
 cityscapes_df = pd.read_csv(cityscapes_path, index_col=0)
 cultural_groups_df = pd.read_csv(cultural_groups_path, index_col=0)
